@@ -5,7 +5,11 @@ var bodyParser = require('body-parser')
 var app = express();
 var ExpressPeerServer = peer.ExpressPeerServer;
 
-var port = process.env.PORT || 9999;
+var http_port = parseInt(process.env.HTTP_PORT) || parseInt(process.env.PORT) || 9999;
+var https_port = parseInt(process.env.HTTPS_PORT) || 9998;
+var port = http_port;
+var secure = false;
+
 var options = {
   debug: true,
   allow_discovery: true
@@ -24,18 +28,28 @@ if(process.env.SSL_KEY_FILE && process.env.SSL_CERT_FILE) {
   server = https.createServer({
     key: privateKey,
     cert: certificate
-  }, app).listen(port, function() {
-    console.log(`HTTPS Listening on ${port}`)
+  }, app).listen(https_port, function() {
+    console.log(`HTTPS Listening on ${https_port}`)
   });
 
   // Also support HTTP alongside HTTPS. Helps with reverse proxy deployments.
-  app.listen(port-1, function () {
-    console.log(`HTTP Listening on ${port-1}`)
+  app.listen(http_port, function () {
+    console.log(`HTTP Listening on ${http_port}`)
   });
+
+  port = https_port;
+  secure = true;
 } else {
-  server = app.listen(port, function () {
-    console.log(`HTTP Listening on ${port}`)
+  server = app.listen(http_port, function () {
+    console.log(`HTTP Listening on ${http_port}`)
   });
+  port = http_port;
+  secure = false;
+}
+
+if(process.env.SECURE_PORT) {
+  port = parseInt(process.env.SECURE_PORT);
+  secure = true;
 }
 
 /* // CORS
@@ -62,7 +76,7 @@ app.post('/nifi', function (req, res) {
 
 // Allow 12-factor config to browser from server environment variables
 app.get('/config.js', function (req, res) {
-  var output = "var config = { port: " + port;
+  var output = "var config = { secure:" + secure + ", port: " + port;
   var peer_config=process.env.PEER_CONFIG || "{}";
   var nifi_config=process.env.NIFI_CONFIG || "{ enabled: false }";
 

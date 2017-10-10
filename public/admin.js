@@ -28,6 +28,7 @@ $(document).on('pageshow', '#admin' ,function(){
   var peer = new Peer({
     host: window.location.hostname,
     port: config.port,
+    secure: config.secure,
     path: '/peerjs',
     debug: 3,
     config: config.peer
