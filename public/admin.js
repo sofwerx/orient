@@ -59,6 +59,9 @@ $(document).on('pageshow', '#admin' ,function(){
         $( "#" + conn.peer + " td.motionAlpha").html(data.alpha);
         $( "#" + conn.peer + " td.motionBeta").html(data.beta);
         $( "#" + conn.peer + " td.motionGamma").html(data.gamma);
+        $( "#" + conn.peer + " td.heading").html(data.heading);
+        $( "#" + conn.peer + " td.speed").html(data.speed);
+        $( "#" + conn.peer + " td.accuracy").html(data.accuracy);
 
         // Remember the orientation metrics so we can send them along with an image
 	if(!metrics[conn.peer]) {
@@ -74,6 +77,9 @@ $(document).on('pageshow', '#admin' ,function(){
 	metrics[conn.peer].orientation.alpha = data.alpha;
 	metrics[conn.peer].orientation.beta = data.beta;
 	metrics[conn.peer].orientation.gamma = data.gamma;
+	metrics[conn.peer].orientation.heading = data.heading;
+	metrics[conn.peer].orientation.speed = data.speed;
+	metrics[conn.peer].orientation.accuracy = data.accuracy;
         break;
       case "geolocation":
         console.log("geolocation: " + conn.peer + ": " + JSON.stringify(data));
@@ -180,7 +186,7 @@ $(document).on('pageshow', '#admin' ,function(){
       // Attach the remoteStream to our video tag so we can see it
       $('#' + call.peer + " video").prop('src', URL.createObjectURL(remoteStream));
 
-      if(config.nifi.enabled) {
+      if(config.nifi.enabled || config.dat.enabled) {
         console.log("console.nifi.enabled is true");
         var canvas = $("#" + call.peer + " canvas").get(0);
         var video = $("#" + call.peer + " video").get(0);
@@ -190,26 +196,57 @@ $(document).on('pageshow', '#admin' ,function(){
         function drawToCanvas() {
           inputCtx.drawImage( video, 0, 0, video.videoWidth, video.videoHeight, 0, 0, video.videoWidth, video.videoHeight );
           var image = canvas.toDataURL('image/png', 1.0);
-          var data = {
-            metrics: metrics[call.peer],
-            image: image
-          }
 
-          // NIFI
-          $.ajax({
-            type: "POST",
-            url: config.nifi.url,
-            data: data,
-            timeout: 3000
-          }).done(function () {
-            console.log("ajax done");
-            //repeat this every time a new frame becomes available using
-            //the browser's build-in requestAnimationFrame method
-            //window.requestAnimationFrame( drawToCanvas );
+          if(config.nifi.enabled)
 
-	    // repeat this drawToCanvas() function every 3 seconds
-            setInterval(function(){ drawToCanvas(); }, 3000);
-          });
+            var data = {
+              metrics: metrics[call.peer],
+              image: image
+            }
+
+            // NIFI
+            $.ajax({
+              type: "POST",
+              url: config.nifi.url,
+              data: data,
+              timeout: 3000
+            }).done(function () {
+              console.log("nifi ajax done");
+              //repeat this every time a new frame becomes available using
+              //the browser's build-in requestAnimationFrame method
+              //window.requestAnimationFrame( drawToCanvas );
+
+	      // repeat this drawToCanvas() function every 3 seconds
+              setInterval(function(){ drawToCanvas(); }, 3000);
+            });
+          } // config.nifi.enabled
+
+          if(config.dat.enabled)
+
+            var data = {
+              image: image,
+	      compass: metrics[conn.peer].geolocation.heading,
+	      lat: metrics[conn.peer].geolocation.latitude,
+	      long: metrics[conn.peer].geolocation.longitude,
+	      fov: 120
+            }
+
+            // NIFI
+            $.ajax({
+              type: "POST",
+              url: config.dat.url,
+              data: data,
+              timeout: 3000
+            }).done(function () {
+              console.log("dta ajax done");
+              //repeat this every time a new frame becomes available using
+              //the browser's build-in requestAnimationFrame method
+              //window.requestAnimationFrame( drawToCanvas );
+
+	      // repeat this drawToCanvas() function every 3 seconds
+              setInterval(function(){ drawToCanvas(); }, 3000);
+            });
+          } // config.nifi.enabled
         }
 
         video.addEventListener("canplay", function(ev) {

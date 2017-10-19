@@ -79,9 +79,11 @@ app.get('/config.js', function (req, res) {
   var output = "var config = { secure:" + secure + ", port: " + port;
   var peer_config=process.env.PEER_CONFIG || "{}";
   var nifi_config=process.env.NIFI_CONFIG || "{ enabled: false }";
+  var dta_config=process.env.DTA_CONFIG || "{ enabled: false }";
 
   output = output + `, peer: ${peer_config}`;
   output = output + `, nifi: ${nifi_config}`;
+  output = output + `, dta: ${dta_config}`;
   output = output + " };\n";
 
   res.setHeader('Content-Type', 'application/javascript');

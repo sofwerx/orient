@@ -17,6 +17,9 @@ $(document).on('pageshow', '#drone' ,function(){
   var alpha;
   var beta;
   var gamma;
+  var heading;
+  var speed;
+  var accuracy;
   var latitude;
   var longitude;
   var drones = {};
@@ -204,7 +207,7 @@ $(document).on('pageshow', '#drone' ,function(){
   var gnargs = {
     frequency:50,                  // ( How often the object sends the values - milliseconds )
     gravityNormalized:true,        // ( If the gravity related values to be normalized )
-    orientationBase:GyroNorm.GAME, // ( Can be GyroNorm.GAME or GyroNorm.WORLD.
+    orientationBase:GyroNorm.WORLD,// ( Can be GyroNorm.GAME or GyroNorm.WORLD.
                                    //   gn.GAME returns orientation values with respect to the head direction of the device.
                                    //   gn.WORLD returns the orientation values with respect to the actual north direction of the world. )
     decimalCount:2,                // ( How many digits after the decimal point will there be in the return values )
@@ -249,6 +252,9 @@ $(document).on('pageshow', '#drone' ,function(){
   function positionUpdate(position) {
     latitude = position.coords.latitude;
     longitude = position.coords.longitude;
+    heading = position.coords.heading;
+    speed = position.coords.speed;
+    accuracy = position.coords.accuracy;
 
     // Send our GeoLocation directly to the Admins
     $.each( admins, function( index, conns) {
@@ -257,7 +263,10 @@ $(document).on('pageshow', '#drone' ,function(){
           conn.send({
             action: "geolocation",
             latitude: longitude,
-            longitude: latitude
+            longitude: latitude,
+            heading: heading,
+            speed: speed,
+            accuracy: accuracy
           });
         }
       });
