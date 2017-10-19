@@ -17,7 +17,7 @@ $(document).on('pageshow', '#admin' ,function(){
   var admins = {};
   var metrics = {};
 
-  L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
   }).addTo(map);
 
@@ -197,8 +197,7 @@ $(document).on('pageshow', '#admin' ,function(){
           inputCtx.drawImage( video, 0, 0, video.videoWidth, video.videoHeight, 0, 0, video.videoWidth, video.videoHeight );
           var image = canvas.toDataURL('image/png', 1.0);
 
-          if(config.nifi.enabled)
-
+          if(config.nifi.enabled) {
             var data = {
               metrics: metrics[call.peer],
               image: image
@@ -221,8 +220,7 @@ $(document).on('pageshow', '#admin' ,function(){
             });
           } // config.nifi.enabled
 
-          if(config.dat.enabled)
-
+          if(config.dat.enabled) {
             var data = {
               image: image,
 	      compass: metrics[conn.peer].geolocation.heading,
