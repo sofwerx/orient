@@ -1,6 +1,7 @@
 var peer = require('peer');
 var express = require('express');
 var bodyParser = require('body-parser')
+var request = require('request');
 
 var app = express();
 var ExpressPeerServer = peer.ExpressPeerServer;
@@ -68,18 +69,39 @@ app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
 // parse application/json
 app.use(bodyParser.json({limit: '10mb'}));
 
+var peer_config=process.env.PEER_CONFIG || "{}";
+var nifi_config=process.env.NIFI_CONFIG || "{ enabled: false }";
+var dta_config=process.env.DTA_CONFIG || "{ enabled: false }";
+var staoi_url=process.env.STAOI_URL;
+
 app.post('/nifi', function (req, res) {
   console.log("nifi: " + JSON.stringify(req.body));
+
   res.setHeader('Content-Type', 'application/json');
   res.send(JSON.stringify({ result: "OK" }));
+
+  if(staoi_url) {
+    var received = JSON.parse(req.body);
+    request.post(staoi_url,
+      {
+        json: {
+          lat: received.latitude,
+          long: received.longitude,
+          compass: received.heading,
+	  image: received.image
+        }
+      },
+      function (error, response, body) {
+        console.log('post to staoi responded with status code: ' + response.statusCode);
+      }
+    );
+  }
+
 });
 
 // Allow 12-factor config to browser from server environment variables
 app.get('/config.js', function (req, res) {
   var output = "var config = { secure:" + secure + ", port: " + port;
-  var peer_config=process.env.PEER_CONFIG || "{}";
-  var nifi_config=process.env.NIFI_CONFIG || "{ enabled: false }";
-  var dta_config=process.env.DTA_CONFIG || "{ enabled: false }";
 
   output = output + `, peer: ${peer_config}`;
   output = output + `, nifi: ${nifi_config}`;
