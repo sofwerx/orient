@@ -58,6 +58,9 @@ $(document).on('pageshow', '#drone' ,function(){
   navigator.getUserMedia(media_constraints, function(stream){
     // View our self-view
     $('#my-video').prop('src', URL.createObjectURL(stream));
+
+    // Mute our microphone by disabling the audio track on our local stream
+    stream.getAudioTracks()[0].enabled = false;
 /*
     inputVideo.addEventListener("canplay", function(ev) {
       console.log("canplay: " + inputVideo.videoWidth + " " + inputVideo.videoHeight);

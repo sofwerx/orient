@@ -81,20 +81,24 @@ app.post('/nifi', function (req, res) {
   res.send(JSON.stringify({ result: "OK" }));
 
   if(staoi_url) {
-    var received = JSON.parse(req.body);
-    request.post(staoi_url,
-      {
-        json: {
-          lat: received.latitude,
-          long: received.longitude,
-          compass: received.heading,
-	  image: received.image
+    try {
+      var received = JSON.parse(req.body);
+      request.post(staoi_url,
+        {
+          json: {
+            lat: received.latitude,
+            long: received.longitude,
+            compass: received.heading,
+	    image: received.image
+          }
+        },
+        function (error, response, body) {
+          console.log('post to staoi responded with status code: ' + response.statusCode);
         }
-      },
-      function (error, response, body) {
-        console.log('post to staoi responded with status code: ' + response.statusCode);
-      }
-    );
+      );
+    } catch(e) {
+      console.log("nifi: JSON parse caught exception: " + e);
+    }
   }
 
 });

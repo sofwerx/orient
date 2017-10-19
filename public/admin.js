@@ -186,7 +186,7 @@ $(document).on('pageshow', '#admin' ,function(){
       // Attach the remoteStream to our video tag so we can see it
       $('#' + call.peer + " video").prop('src', URL.createObjectURL(remoteStream));
 
-      if(config.nifi.enabled || config.dat.enabled) {
+      if(config.nifi.enabled || config.dta.enabled) {
         console.log("console.nifi.enabled is true");
         var canvas = $("#" + call.peer + " canvas").get(0);
         var video = $("#" + call.peer + " video").get(0);
@@ -197,7 +197,9 @@ $(document).on('pageshow', '#admin' ,function(){
           inputCtx.drawImage( video, 0, 0, video.videoWidth, video.videoHeight, 0, 0, video.videoWidth, video.videoHeight );
           var image = canvas.toDataURL('image/png', 1.0);
 
+	  console.log('drawToCanvas()');
           if(config.nifi.enabled) {
+	    console.log('nifi is enabled. Sending data to nifi url: ' + config.nifi.url);
             var data = {
               metrics: metrics[call.peer],
               image: image
@@ -208,19 +210,22 @@ $(document).on('pageshow', '#admin' ,function(){
               type: "POST",
               url: config.nifi.url,
               data: data,
-              timeout: 3000
+              timeout: 10000
+            }).error(function (jqXHR, textStatus, errorThrown) {
+              console.log("nifi error text: " + textStatus);
+              console.log("nifi error thrown: " + errorThrown);
             }).done(function () {
               console.log("nifi ajax done");
               //repeat this every time a new frame becomes available using
               //the browser's build-in requestAnimationFrame method
               //window.requestAnimationFrame( drawToCanvas );
 
-	      // repeat this drawToCanvas() function every 3 seconds
-              setInterval(function(){ drawToCanvas(); }, 3000);
             });
+            console.log("ajax sent");
           } // config.nifi.enabled
 
-          if(config.dat.enabled) {
+          if(config.dta.enabled) {
+	    console.log('dta is enabled. Sending data to dta url: ' + config.dta.url);
             var data = {
               image: image,
 	      compass: metrics[conn.peer].geolocation.heading,
@@ -232,7 +237,7 @@ $(document).on('pageshow', '#admin' ,function(){
             // NIFI
             $.ajax({
               type: "POST",
-              url: config.dat.url,
+              url: config.dta.url,
               data: data,
               timeout: 3000
             }).done(function () {
@@ -247,9 +252,13 @@ $(document).on('pageshow', '#admin' ,function(){
           } // config.nifi.enabled
         }
 
+	console.log('preparing canplay callback');
         video.addEventListener("canplay", function(ev) {
+	  console.log('canplay event, trigger drone update, start drawToCanvaS()');
           $("#drone" ).trigger("update");
-          drawToCanvas();
+
+          // repeat this drawToCanvas() function every 3 seconds
+          setInterval(function(){ drawToCanvas(); }, 3000);
         });
       } // end of conditional config.nifi.enabled section
 
@@ -310,6 +319,19 @@ $(document).on('pageshow', '#admin' ,function(){
   }
 
   $("#mapid").height($(window).height()).width($(window).width());
-  map.invalidateSize();
+
+  map.refresh = function(timeout) {
+    window.setTimeout( function() {
+      map.invalidateSize();
+      console.log("map.invalidateSize()");
+    }, timeout);
+  };
+
+  $( "#map-container" ).collapsible({
+    expand: function( event, ui ) {
+      map.invalidateSize();
+      console.log("map.invalidateSize()");
+    }
+  });
 });
 
