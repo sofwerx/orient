@@ -132,7 +132,7 @@ $(document).on('pageshow', '#drone' ,function(){
 	      }); // each conn
 	    }); // each admin
           }); // ajax done()
-	}
+        }
         break;
       case "Drone":
         // We now have a data connection open to a neighboring Drone
