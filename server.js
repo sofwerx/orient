@@ -112,8 +112,8 @@ app.get('/config.js', function (req, res) {
   output = output + `, peer: ${peer_config}`;
   output = output + `, nifi: ${nifi_config}`;
   output = output + `, dta: ${dta_config}`;
-  output = output + `, objlob: ${dta_config}`;
-  output = output + `, triangulate: ${dta_config}`;
+  output = output + `, objlob: ${objlob_config}`;
+  output = output + `, triangulate: ${triangulate_config}`;
   output = output + " };\n";
 
   res.setHeader('Content-Type', 'application/javascript');
