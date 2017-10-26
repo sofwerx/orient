@@ -100,12 +100,11 @@ $(document).on('pageshow', '#drone' ,function(){
 
           // objlob API POST JSON
 	  query = {
-            compass: heading,
-            lat: longitude,
-            long: latitude,
-	    fov: 120,
-	    image: image
+            "CompassHdg": heading,
+            "CameraFoV": 120,
+            "ImageEncoded": image
 	  };
+
           $.ajax({
             type: "POST",
             url: config.objlob.url,
@@ -114,20 +113,25 @@ $(document).on('pageshow', '#drone' ,function(){
           }).error(function (jqXHR, textStatus, errorThrown) {
             console.log("objlob error text: " + textStatus);
             console.log("objlob error thrown: " + errorThrown);
-          }).done(function ( response ) {
-            console.log("objlob ajax done: " + JSON.stringify(response));
+          }).done(function ( aob ) {
+            console.log("objlob ajax done: " + aob);
 
-            // Send the response back to Admin as an Updated action
+            // Send the objlob back to Admin as an Updated action
             $.each( admins, function(peer, admin) {
               $.each( admin, function(index, conn) {
 	        conn.send({
 	          action: "Updated",
-		  timestamp: data.timestamp,
-		  response: response
+                  timestamp: data.timestamp,
+                  objlob: {
+	            lat: latitude,
+	            lon: longitude,
+                    aob: aob,
+	            angleUnit: "deg"
+                  }
 	        });
-	      });
-	    });
-          });
+	      }); // each conn
+	    }); // each admin
+          }); // ajax done()
 	}
         break;
       case "Drone":
