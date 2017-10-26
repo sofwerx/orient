@@ -36,9 +36,9 @@ $(document).on('pageshow', '#admin' ,function(){
     config: config.peer
   });
 
-  $( ".captureButton" ).bind( "click", function(event, ui) {
+  $( "#captureButton" ).bind( "click", function(event, ui) {
     console.log("Capture button clicked");
-    if(drones.length >= 3) {
+    if(Object.keys(drones).length >= 3) {
       console.log("3 or more drones available, sending Update action to each drone");
       var date = new Date();
       var timestamp = date.getTime();
@@ -47,12 +47,14 @@ $(document).on('pageshow', '#admin' ,function(){
         console.log("Enumerating drone peer " + peer);
         $.each( drones[peer], function( index, conn) {
           console.log("sending Update action to peer " + peer + " index " + index);
-          drone.send({
+          conn.send({
             action: "Update",
 	    timestamp: timestamp
 	  });
         });
       });
+    } else {
+      console.log("We only have " + Object.keys(drones).length + " drones available. Cannot triangulate.");
     }
   });
 
@@ -122,10 +124,12 @@ $(document).on('pageshow', '#admin' ,function(){
           drones[conn.peer] = [];
         }
         drones[conn.peer].push(conn);
-	if(drones.length >= 3) {
+/*
+        if(Object.keys(drones).length >= 3) {
           console.log("3 or more drones, enabling capture button");
           $('#captureButton').removeClass('ui-state-disabled');
 	}
+*/
         break;
       case "orientation":
         /* Do something with the received x,y,z,absolute,alpha,beta,gamma */
