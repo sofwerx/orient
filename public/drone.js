@@ -311,8 +311,8 @@ $(document).on('pageshow', '#drone' ,function(){
         if(conn.open) {
           conn.send({
             action: "geolocation",
-            latitude: longitude,
-            longitude: latitude,
+            latitude: latitude,
+            longitude: longitude,
             heading: heading,
             speed: speed,
             accuracy: accuracy
