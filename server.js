@@ -53,13 +53,13 @@ if(process.env.SECURE_PORT) {
   secure = true;
 }
 
-/* // CORS
+// CORS
 app.use(function(req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
   next();
 });
-*/
+
 
 // Peer.js WebSocket service
 app.use('/peerjs', ExpressPeerServer(server, options));
