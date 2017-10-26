@@ -88,10 +88,12 @@ $(document).on('pageshow', '#admin' ,function(){
         if(marker) {
           var newLatLng = new L.LatLng(data.latitude, data.longitude);
           marker.setLatLng(newLatLng); 
+          console.log("geolocation updated marker for " + conn.peer);
         } else {
           marker = L.marker([data.latitude, data.longitude]).addTo(map);
           marker.bindPopup(conn.peer);
           markers[conn.peer] = marker;
+          console.log("geolocation created marker for " + conn.peer);
         }
         $( "#" + conn.peer + " td.geolocationLatitude").html(data.latitude);
         $( "#" + conn.peer + " td.geolocationLongitude").html(data.longitude);
