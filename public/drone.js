@@ -138,7 +138,7 @@ $(document).on('pageshow', '#drone' ,function(){
         // We now have a data connection open to a neighboring Drone
 	  // Remember all drone connections for this peer
         if(!drones[conn.peer]) {
-          drones = [ conn ];
+          drones = {};
         }
         drones[conn.peer].push(conn);
         break;
