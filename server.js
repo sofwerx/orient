@@ -73,7 +73,7 @@ var peer_config=process.env.PEER_CONFIG || "{}";
 var nifi_config=process.env.NIFI_CONFIG || "{ enabled: false }";
 var dta_config=process.env.DTA_CONFIG || "{ enabled: false }";
 var objlob_config=process.env.OBJLOB_CONFIG || "{ enabled: false }";
-var triangulate_config=process.env.OBJLOB_CONFIG || "{ enabled: false }";
+var triangulate_config=process.env.TRIANGULATE_CONFIG || "{ enabled: false }";
 var staoi_url=process.env.STAOI_URL;
 
 app.post('/nifi', function (req, res) {
