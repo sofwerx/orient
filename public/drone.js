@@ -40,19 +40,20 @@ $(document).on('pageshow', '#drone' ,function(){
   };
 
   var inputVideo = $( "#my-video" )[0];
-  var inputCtx = $( "#my-canvas" )[0].getContext( '2d' );
+  var inputCanvas = $( "#my-canvas" )[0];
+  var inputCtx = inputCanvas.getContext( '2d' );
 
   // Send the video to a canvas
-  function drawToCanvas() {
+  //function drawToCanvas() {
     // draw the current frame of localVideo onto the canvas,
     // starting at 0, 0 (top-left corner) and covering its full
     // width and heigth
-    inputCtx.drawImage( inputVideo, 0, 0, inputVideo.videoWidth, inputVideo.videoHeight );
-
-    //repeat this every time a new frame becomes available using
-    //the browser's build-in requestAnimationFrame method
-    window.requestAnimationFrame( drawToCanvas );
-  }
+  //  inputCtx.drawImage( inputVideo, 0, 0, inputVideo.videoWidth, inputVideo.videoHeight );
+  //
+  //}
+  //repeat this every time a new frame becomes available using
+  //the browser's build-in requestAnimationFrame method
+  //window.requestAnimationFrame( drawToCanvas );
 
   // Prepare the audio/video stream
   navigator.getUserMedia(media_constraints, function(stream){
@@ -88,11 +89,56 @@ $(document).on('pageshow', '#drone' ,function(){
 
   function processReceivedData(conn, data) {
     switch (data.action) {
+      case "Update":
+        console.log("Update action received");
+        // Take a capture of the local stream to a canvas, then send that canvas to obj_lob
+        if(config.objlob.enabled) {
+          console.log("objlob is enabled");
+
+          inputCtx.drawImage( inputVideo, 0, 0, inputVideo.videoWidth, inputVideo.videoHeight, 0, 0, inputVideo.videoWidth, inputVideo.videoHeight );
+          var image = inputCanvas.toDataURL('image/png', 1.0);
+
+          // objlob API POST JSON
+          query = {
+            "CompassHdg": heading,
+            "CameraFoV": 120,
+            "ImageEncoded": image
+          };
+
+          $.ajax({
+            type: "POST",
+            url: config.objlob.url,
+            data: query,
+            timeout: 10000
+          }).error(function (jqXHR, textStatus, errorThrown) {
+            console.log("objlob error text: " + textStatus);
+            console.log("objlob error thrown: " + errorThrown);
+          }).done(function ( aob ) {
+            console.log("objlob ajax done: " + aob);
+
+            // Send the objlob back to Admin as an Updated action
+            $.each( admins, function(peer, admin) {
+              $.each( admin, function(index, conn) {
+	        conn.send({
+	          action: "Updated",
+                  timestamp: data.timestamp,
+                  objlob: {
+	            lat: latitude,
+	            lon: longitude,
+                    aob: aob,
+	            angleUnit: "deg"
+                  }
+	        });
+	      }); // each conn
+	    }); // each admin
+          }); // ajax done()
+        }
+        break;
       case "Drone":
         // We now have a data connection open to a neighboring Drone
 	  // Remember all drone connections for this peer
         if(!drones[conn.peer]) {
-          drones = [ conn ];
+          drones = {};
         }
         drones[conn.peer].push(conn);
         break;

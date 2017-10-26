@@ -16,6 +16,8 @@ $(document).on('pageshow', '#admin' ,function(){
   var drones = {};
   var admins = {};
   var metrics = {};
+  var updates = {};
+  var triangulated;
 
   L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
@@ -34,8 +36,79 @@ $(document).on('pageshow', '#admin' ,function(){
     config: config.peer
   });
 
+  $( ".captureButton" ).bind( "click", function(event, ui) {
+    console.log("Capture button clicked");
+    if(drones.length >= 3) {
+      console.log("3 or more drones available, sending Update action to each drone");
+      var date = new Date();
+      var timestamp = date.getTime();
+      updates[timestamp] = {};
+      $.each( drones, function( peer, drone) {
+        console.log("Enumerating drone peer " + peer);
+        $.each( drones[peer], function( index, conn) {
+          console.log("sending Update action to peer " + peer + " index " + index);
+          drone.send({
+            action: "Update",
+	    timestamp: timestamp
+	  });
+        });
+      });
+    }
+  });
+
   function processReceivedData(conn, data) {
     switch (data.action) {
+      case "Updated":
+        console.log("Updated action received from a drone: " + data);
+
+        // If triangulate is enabled and we have been given a timestamp to correlate
+	if(config.triangulate.enabled && data.timestamp) {
+          console.log("triangulate is enabled");
+
+          // Push the Updated message objlob property to the timestamp correlated array
+	  updates[data.timestamp].push(data.objlob);
+
+          // If we have >= 3 updated messages to process, call Triangulate
+	  if(Object.keys(updates[data.timestamp]).count >= 3) {
+
+            // We have collected >= 3 objlob responses.
+
+	    // These are the coords for Triangulate's TargetLocate
+	    data = {
+	      "coords": updates[data.timestamp]
+	    }
+
+            $.ajax({
+              type: "POST",
+              url: config.triangulate.url,
+              data: data,
+              timeout: 10000
+            }).error(function (jqXHR, textStatus, errorThrown) {
+              console.log("triangulate error text: " + textStatus);
+              console.log("triangulate error thrown: " + errorThrown);
+            }).done(function (result) {
+              console.log("triangulate ajax done");
+
+             if(result.hasIntersect) {
+                console.log("triangulate intersection found!");
+               if(triangulated) {
+                 var newLatLng = new L.LatLng(result.targetLoc.lat, result.targetLoc.lon);
+                 triangulated.setLatLng(newLatLng); 
+                 console.log("triangulate map location updated");
+               } else {
+                 triangulated = L.marker([result.targetLoc.lat, result.targetLoc.lon]).addTo(map);
+                 triangulated.bindPopup("Triangulated");
+                 console.log("triangulate map location created");
+               }
+	     }
+            });
+            console.log("triangulate ajax sent");
+
+          } // If we have >= 3 updated messages to process
+
+        } // If triangulate is enabled and we have been given a timestamp to correlate
+
+        break;
       case "Admin":
         console.log("Admin action received from " + conn.peer);
         if(!admins[conn.peer]) {
@@ -49,6 +122,10 @@ $(document).on('pageshow', '#admin' ,function(){
           drones[conn.peer] = [];
         }
         drones[conn.peer].push(conn);
+	if(drones.length >= 3) {
+          console.log("3 or more drones, enabling capture button");
+          $('#captureButton').removeClass('ui-state-disabled');
+	}
         break;
       case "orientation":
         /* Do something with the received x,y,z,absolute,alpha,beta,gamma */
