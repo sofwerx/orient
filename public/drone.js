@@ -99,11 +99,11 @@ $(document).on('pageshow', '#drone' ,function(){
           var image = inputCanvas.toDataURL('image/png', 1.0);
 
           // objlob API POST JSON
-	  query = {
+          query = {
             "CompassHdg": heading,
             "CameraFoV": 120,
             "ImageEncoded": image
-	  };
+          };
 
           $.ajax({
             type: "POST",
