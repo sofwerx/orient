@@ -109,7 +109,7 @@ $(document).on('pageshow', '#drone' ,function(){
             type: "POST",
             url: config.objlob.url,
             data: JSON.stringify(query),
-            timeout: 10000
+            timeout: 20000
           }).error(function (jqXHR, textStatus, errorThrown) {
             console.log("objlob error text: " + textStatus);
             console.log("objlob error thrown: " + errorThrown);
