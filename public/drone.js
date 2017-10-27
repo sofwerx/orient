@@ -100,9 +100,9 @@ $(document).on('pageshow', '#drone' ,function(){
 
           // objlob API POST JSON
           query = {
-            "CompassHdg": heading,
-            "CameraFoV": 120,
-            "ImageEncoded": image
+            "compass": alpha,
+            "fov": 120,
+            "image": image
           };
 
           $.ajax({
