@@ -96,7 +96,7 @@ $(document).on('pageshow', '#drone' ,function(){
           console.log("objlob is enabled");
 
           inputCtx.drawImage( inputVideo, 0, 0, inputVideo.videoWidth, inputVideo.videoHeight, 0, 0, inputVideo.videoWidth, inputVideo.videoHeight );
-          var image = inputCanvas.toDataURL('image/png', 1.0);
+          var image = inputCanvas.toDataURL('image/jpeg', 1.0);
 
           // objlob API POST JSON
           query = {

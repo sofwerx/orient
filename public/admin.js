@@ -278,7 +278,7 @@ $(document).on('pageshow', '#admin' ,function(){
         // Send the video to a canvas
         function drawToCanvas() {
           inputCtx.drawImage( video, 0, 0, video.videoWidth, video.videoHeight, 0, 0, video.videoWidth, video.videoHeight );
-          var image = canvas.toDataURL('image/png', 1.0);
+          var image = canvas.toDataURL('image/jpeg', 1.0);
 
 	  console.log('drawToCanvas()');
           if(config.nifi.enabled) {
