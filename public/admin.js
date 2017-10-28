@@ -42,15 +42,15 @@ $(document).on('pageshow', '#admin' ,function(){
       console.log("3 or more drones available, sending Update action to each drone");
       var date = new Date();
       var timestamp = date.getTime();
-      updates[timestamp] = {};
+      updates[timestamp] = [];
       $.each( drones, function( peer, drone) {
         console.log("Enumerating drone peer " + peer);
         $.each( drones[peer], function( index, conn) {
           console.log("sending Update action to peer " + peer + " index " + index);
           conn.send({
             action: "Update",
-	    timestamp: timestamp
-	  });
+            timestamp: timestamp
+          });
         });
       });
     } else {
@@ -61,24 +61,31 @@ $(document).on('pageshow', '#admin' ,function(){
   function processReceivedData(conn, data) {
     switch (data.action) {
       case "Updated":
-        console.log("Updated action received from a drone: " + data);
+        console.log("Updated action received from a drone: " + JSON.stringify(data));
 
         // If triangulate is enabled and we have been given a timestamp to correlate
-	if(config.triangulate.enabled && data.timestamp) {
+        if(config.triangulate.enabled && data.timestamp) {
           console.log("triangulate is enabled");
+          console.log("timestamp " + data.timestamp + " received.");
 
           // Push the Updated message objlob property to the timestamp correlated array
-	  updates[data.timestamp].push(data.objlob);
+          if(!updates[data.timestamp]) {
+            updates[data.timestamp] = [];
+          }
+          updates[data.timestamp].push(data.objlob);
 
           // If we have >= 3 updated messages to process, call Triangulate
-	  if(Object.keys(updates[data.timestamp]).count >= 3) {
+          if(Object.keys(updates[data.timestamp]).length >= 3) {
 
             // We have collected >= 3 objlob responses.
+            console.log("we have collected >= 3 objlob responses for " + data.timestamp);
 
-	    // These are the coords for Triangulate's TargetLocate
-	    data = {
-	      "coords": updates[data.timestamp]
-	    }
+            // These are the coords for Triangulate's TargetLocate
+            data = {
+              "coords": updates[data.timestamp]
+            }
+
+            console.log("POSTing to triangulate: " + JSON.stringify(data));
 
             $.ajax({
               type: "POST",
@@ -102,10 +109,11 @@ $(document).on('pageshow', '#admin' ,function(){
                  triangulated.bindPopup("Triangulated");
                  console.log("triangulate map location created");
                }
-	     }
+             }
             });
             console.log("triangulate ajax sent");
-
+          } else {
+            console.log("we only have " + Object.keys(updates[data.timestamp]).length + " objlobs for " + data.timestamp);
           } // If we have >= 3 updated messages to process
 
         } // If triangulate is enabled and we have been given a timestamp to correlate
@@ -128,7 +136,7 @@ $(document).on('pageshow', '#admin' ,function(){
         if(Object.keys(drones).length >= 3) {
           console.log("3 or more drones, enabling capture button");
           $('#captureButton').removeClass('ui-state-disabled');
-	}
+        }
 */
         break;
       case "orientation":
@@ -145,49 +153,49 @@ $(document).on('pageshow', '#admin' ,function(){
         $( "#" + conn.peer + " td.accuracy").html(data.accuracy);
 
         // Remember the orientation metrics so we can send them along with an image
-	if(!metrics[conn.peer]) {
-	  metrics[conn.peer] = {};
+        if(!metrics[conn.peer]) {
+          metrics[conn.peer] = {};
         }
-	if(!metrics[conn.peer].orientation) {
-	  metrics[conn.peer].orientation = {};
+        if(!metrics[conn.peer].orientation) {
+          metrics[conn.peer].orientation = {};
         }
-	metrics[conn.peer].orientation.x = data.x;
-	metrics[conn.peer].orientation.y = data.y;
-	metrics[conn.peer].orientation.z = data.z;
-	metrics[conn.peer].orientation.absolute = data.absolute;
-	metrics[conn.peer].orientation.alpha = data.alpha;
-	metrics[conn.peer].orientation.beta = data.beta;
-	metrics[conn.peer].orientation.gamma = data.gamma;
-	metrics[conn.peer].orientation.heading = data.heading;
-	metrics[conn.peer].orientation.speed = data.speed;
-	metrics[conn.peer].orientation.accuracy = data.accuracy;
+        metrics[conn.peer].orientation.x = data.x;
+        metrics[conn.peer].orientation.y = data.y;
+        metrics[conn.peer].orientation.z = data.z;
+        metrics[conn.peer].orientation.absolute = data.absolute;
+        metrics[conn.peer].orientation.alpha = data.alpha;
+        metrics[conn.peer].orientation.beta = data.beta;
+        metrics[conn.peer].orientation.gamma = data.gamma;
+        metrics[conn.peer].orientation.heading = data.heading;
+        metrics[conn.peer].orientation.speed = data.speed;
+        metrics[conn.peer].orientation.accuracy = data.accuracy;
         break;
       case "geolocation":
-        console.log("geolocation: " + conn.peer + ": " + JSON.stringify(data));
+        //console.log("geolocation: " + conn.peer + ": " + JSON.stringify(data));
         /* Do something with the received latitude, longitude */
         var marker = markers[conn.peer];
         if(marker) {
           var newLatLng = new L.LatLng(data.latitude, data.longitude);
           marker.setLatLng(newLatLng); 
-          console.log("geolocation updated marker for " + conn.peer);
+          //console.log("geolocation updated marker for " + conn.peer);
         } else {
           marker = L.marker([data.latitude, data.longitude]).addTo(map);
           marker.bindPopup(conn.peer);
           markers[conn.peer] = marker;
-          console.log("geolocation created marker for " + conn.peer);
+          //console.log("geolocation created marker for " + conn.peer);
         }
         $( "#" + conn.peer + " td.geolocationLatitude").html(data.latitude);
         $( "#" + conn.peer + " td.geolocationLongitude").html(data.longitude);
 
         // Remember the geolocation metrics so we can send them along with an image
-	if(!metrics[conn.peer]) {
-	  metrics[conn.peer] = {};
+        if(!metrics[conn.peer]) {
+          metrics[conn.peer] = {};
         }
-	if(!metrics[conn.peer].geolocation) {
-	  metrics[conn.peer].geolocation = {};
+        if(!metrics[conn.peer].geolocation) {
+          metrics[conn.peer].geolocation = {};
         }
-	metrics[conn.peer].geolocation.latitude = data.latitude;
-	metrics[conn.peer].geolocation.longitude = data.longitude;
+        metrics[conn.peer].geolocation.latitude = data.latitude;
+        metrics[conn.peer].geolocation.longitude = data.longitude;
         break;
       default:
         console.log("Unknown message received from " + conn.peer + ": " + JSON.stringify(data));
@@ -280,9 +288,9 @@ $(document).on('pageshow', '#admin' ,function(){
           inputCtx.drawImage( video, 0, 0, video.videoWidth, video.videoHeight, 0, 0, video.videoWidth, video.videoHeight );
           var image = canvas.toDataURL('image/jpeg', 1.0);
 
-	  console.log('drawToCanvas()');
+          console.log('drawToCanvas()');
           if(config.nifi.enabled) {
-	    console.log('nifi is enabled. Sending data to nifi url: ' + config.nifi.url);
+            console.log('nifi is enabled. Sending data to nifi url: ' + config.nifi.url);
             var data = {
               metrics: metrics[call.peer],
               image: image
@@ -308,13 +316,13 @@ $(document).on('pageshow', '#admin' ,function(){
           } // config.nifi.enabled
 
           if(config.dta.enabled) {
-	    console.log('dta is enabled. Sending data to dta url: ' + config.dta.url);
+            console.log('dta is enabled. Sending data to dta url: ' + config.dta.url);
             var data = {
               image: image,
-	      compass: metrics[conn.peer].geolocation.heading,
-	      lat: metrics[conn.peer].geolocation.latitude,
-	      long: metrics[conn.peer].geolocation.longitude,
-	      fov: 120
+              compass: metrics[conn.peer].geolocation.heading,
+              lat: metrics[conn.peer].geolocation.latitude,
+              long: metrics[conn.peer].geolocation.longitude,
+              fov: 120
             }
 
             // NIFI
@@ -329,15 +337,15 @@ $(document).on('pageshow', '#admin' ,function(){
               //the browser's build-in requestAnimationFrame method
               //window.requestAnimationFrame( drawToCanvas );
 
-	      // repeat this drawToCanvas() function every 3 seconds
+              // repeat this drawToCanvas() function every 3 seconds
               setInterval(function(){ drawToCanvas(); }, 3000);
             });
           } // config.nifi.enabled
         }
 
-	console.log('preparing canplay callback');
+        console.log('preparing canplay callback');
         video.addEventListener("canplay", function(ev) {
-	  console.log('canplay event, trigger drone update, start drawToCanvaS()');
+          console.log('canplay event, trigger drone update, start drawToCanvaS()');
           $("#drone" ).trigger("update");
 
           // repeat this drawToCanvas() function every 3 seconds

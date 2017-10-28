@@ -102,7 +102,9 @@ $(document).on('pageshow', '#drone' ,function(){
           query = {
             "compass": alpha,
             "fov": 120,
-            "image": image
+            "image": image,
+            "peer": peer.id,
+            "timestamp": data.timestamp
           };
 
           $.ajax({
@@ -113,19 +115,20 @@ $(document).on('pageshow', '#drone' ,function(){
           }).error(function (jqXHR, textStatus, errorThrown) {
             console.log("objlob error text: " + textStatus);
             console.log("objlob error thrown: " + errorThrown);
-          }).done(function ( aob ) {
-            console.log("objlob ajax done: " + aob);
+          }).done(function ( resp ) {
+            console.log("objlob ajax done: " + JSON.stringify(resp));
 
             // Send the objlob back to Admin as an Updated action
             $.each( admins, function(peer, admin) {
               $.each( admin, function(index, conn) {
+                console.log("objlob sending Updated to " + conn.peer);
 	        conn.send({
 	          action: "Updated",
                   timestamp: data.timestamp,
                   objlob: {
 	            lat: latitude,
 	            lon: longitude,
-                    aob: aob,
+                    aob: resp.aob,
 	            angleUnit: "deg"
                   }
 	        });
