@@ -24,6 +24,7 @@ $(document).on('pageshow', '#drone' ,function(){
   var longitude;
   var drones = {};
   var admins = {};
+  var debounce = {};
 
   // Compatibility shim
   navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
@@ -91,6 +92,12 @@ $(document).on('pageshow', '#drone' ,function(){
     switch (data.action) {
       case "Update":
         console.log("Update action received");
+	if(debounce[data.timestamp]) {
+          console.log("Already processed this Update message, skipiing");
+	  break;
+	}
+	debounce[data.timestamp] = 1;
+
         // Take a capture of the local stream to a canvas, then send that canvas to obj_lob
         if(config.objlob.enabled) {
           console.log("objlob is enabled");

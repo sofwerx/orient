@@ -45,6 +45,7 @@ $(document).on('pageshow', '#admin' ,function(){
       updates[timestamp] = [];
       $.each( drones, function( peer, drone) {
         console.log("Enumerating drone peer " + peer);
+
         $.each( drones[peer], function( index, conn) {
           console.log("sending Update action to peer " + peer + " index " + index);
           conn.send({
@@ -52,6 +53,7 @@ $(document).on('pageshow', '#admin' ,function(){
             timestamp: timestamp
           });
         });
+
       });
     } else {
       console.log("We only have " + Object.keys(drones).length + " drones available. Cannot triangulate.");
@@ -72,7 +74,15 @@ $(document).on('pageshow', '#admin' ,function(){
           if(!updates[data.timestamp]) {
             updates[data.timestamp] = [];
           }
-          updates[data.timestamp].push(data.objlob);
+          if(data.objlob.hasOwnProperty("lat") && data.objlob.hasOwnProperty("lon") &&
+             data.objlob.hasOwnProperty("aob") && data.objlob.hasOwnProperty("angleUnit")) {
+            console.log("Pushing objlob to list for [" + conn.peer + "/" + data.timestamp + "]" );
+            updates[data.timestamp].push(data.objlob);
+	  } else {
+            console.log("WARNING: Disregarded action: Updated did not include both a lat and a lon");
+	    break;
+	  }
+
 
           // If we have >= 3 updated messages to process, call Triangulate
           if(Object.keys(updates[data.timestamp]).length >= 3) {
@@ -90,7 +100,7 @@ $(document).on('pageshow', '#admin' ,function(){
             $.ajax({
               type: "POST",
               url: config.triangulate.url,
-              data: data,
+              data: JSON.stringify(data),
               timeout: 10000
             }).error(function (jqXHR, textStatus, errorThrown) {
               console.log("triangulate error text: " + textStatus);
