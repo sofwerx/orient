@@ -78,10 +78,10 @@ $(document).on('pageshow', '#admin' ,function(){
              data.objlob.hasOwnProperty("aob") && data.objlob.hasOwnProperty("angleUnit")) {
             console.log("Pushing objlob to list for [" + conn.peer + "/" + data.timestamp + "]" );
             updates[data.timestamp].push(data.objlob);
-	  } else {
+          } else {
             console.log("WARNING: Disregarded action: Updated did not include both a lat and a lon");
-	    break;
-	  }
+            break;
+          }
 
 
           // If we have >= 3 updated messages to process, call Triangulate
@@ -119,6 +119,8 @@ $(document).on('pageshow', '#admin' ,function(){
                  triangulated.bindPopup("Triangulated");
                  console.log("triangulate map location created");
                }
+               // Re-center the map to the triangulated latitude/longitude
+               map.setView(triangulated.getLatLng(),map.getZoom());
              }
             });
             console.log("triangulate ajax sent");
@@ -179,6 +181,11 @@ $(document).on('pageshow', '#admin' ,function(){
         metrics[conn.peer].orientation.heading = data.heading;
         metrics[conn.peer].orientation.speed = data.speed;
         metrics[conn.peer].orientation.accuracy = data.accuracy;
+        var marker = markers[conn.peer];
+        if(marker) {
+          var rotation = metrics[conn.peer].orientation.alpha || 0;
+          marker.setRotationAngle(rotation);
+        }
         break;
       case "geolocation":
         //console.log("geolocation: " + conn.peer + ": " + JSON.stringify(data));
@@ -186,10 +193,11 @@ $(document).on('pageshow', '#admin' ,function(){
         var marker = markers[conn.peer];
         if(marker) {
           var newLatLng = new L.LatLng(data.latitude, data.longitude);
-          marker.setLatLng(newLatLng); 
+          marker.setLatLng(newLatLng);
           //console.log("geolocation updated marker for " + conn.peer);
         } else {
-          marker = L.marker([data.latitude, data.longitude]).addTo(map);
+          var rotation = metrics[conn.peer].orientation.alpha || 0;
+          marker = L.marker([data.latitude, data.longitude],{ rotationAngle: rotation, rotationOrigin: 'bottom center' }).addTo(map);
           marker.bindPopup(conn.peer);
           markers[conn.peer] = marker;
           //console.log("geolocation created marker for " + conn.peer);
