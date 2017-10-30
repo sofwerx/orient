@@ -138,13 +138,18 @@ $(document).on('pageshow', '#admin' ,function(){
               console.log("triangulate ajax done");
 
              if(result.hasIntersect) {
-                console.log("triangulate intersection found!");
+               console.log("triangulate intersection found!" + JSON.stringify(result));
                if(triangulated) {
                  var newLatLng = new L.LatLng(result.targetLoc.lat, result.targetLoc.lon);
                  triangulated.setLatLng(newLatLng); 
                  console.log("triangulate map location updated");
                } else {
-                 triangulated = L.marker([result.targetLoc.lat, result.targetLoc.lon]).addTo(map);
+		 var redMarker = L.AwesomeMarkers.icon({
+		     icon: 'dot-circle-o',
+		     markerColor: 'red'
+		 });
+                 triangulated = L.marker([result.targetLoc.lat, result.targetLoc.lon], {icon: redMarker}).addTo(map);
+
                  triangulated.bindPopup("Triangulated");
                  console.log("triangulate map location created");
                }
