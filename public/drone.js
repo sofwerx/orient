@@ -17,11 +17,13 @@ $(document).on('pageshow', '#drone' ,function(){
   var alpha;
   var beta;
   var gamma;
+  var change;
   var heading;
-  var speed;
-  var accuracy;
+  var compass;
   var latitude;
   var longitude;
+  var speed;
+  var accuracy;
   var drones = {};
   var admins = {};
   var debounce = {};
@@ -88,6 +90,37 @@ $(document).on('pageshow', '#drone' ,function(){
     config: config.peer
   });
 
+  var degtorad = Math.PI / 180; // Degree-to-Radian conversion
+
+  function compassHeading( alpha, beta, gamma ) {
+    var _x = beta  ? beta  * degtorad : 0; // beta value
+    var _y = gamma ? gamma * degtorad : 0; // gamma value
+    var _z = alpha ? alpha * degtorad : 0; // alpha value
+
+    var cX = Math.cos( _x );
+    var cY = Math.cos( _y );
+    var cZ = Math.cos( _z );
+    var sX = Math.sin( _x );
+    var sY = Math.sin( _y );
+    var sZ = Math.sin( _z );
+
+    // Calculate Vx and Vy components
+    var Vx = - cZ * sY - sZ * sX * cY;
+    var Vy = - sZ * sY + cZ * sX * cY;
+
+    // Calculate compass heading
+    var compassHeading = Math.atan( Vx / Vy );
+
+    // Convert compass heading to use whole unit circle
+    if( Vy < 0 ) {
+      compassHeading += Math.PI;
+    } else if( Vx < 0 ) {
+      compassHeading += 2 * Math.PI;
+    }
+
+    return compassHeading * ( 180 / Math.PI ); // Compass Heading (in degrees)
+  }
+
   function processReceivedData(conn, data) {
     switch (data.action) {
       case "Update":
@@ -107,7 +140,7 @@ $(document).on('pageshow', '#drone' ,function(){
 
           // objlob API POST JSON
           query = {
-            "compass": alpha,
+            "compass": heading || compass,
             "fov": 120,
             "image": image,
             "peer": peer.id,
@@ -263,6 +296,7 @@ $(document).on('pageshow', '#drone' ,function(){
     }
   });
 
+/*
   var gnargs = {
     frequency:50,                  // ( How often the object sends the values - milliseconds )
     gravityNormalized:true,        // ( If the gravity related values to be normalized )
@@ -307,13 +341,61 @@ $(document).on('pageshow', '#drone' ,function(){
     // Catch if the DeviceOrientation or DeviceMotion is not supported by the browser or device
     alert("DeviceOrientation and/or DeviceMotion are not available");
   });
+*/
+
+  function handleOrientation(event) {
+    alpha = event.alpha; 
+    beta = event.beta; 
+    gamma = event.gamma; 
+    compass = compassHeading(alpha, beta, gamma);
+
+    // Send our DeviceOrientation and DeviceMotion directly to our Admins
+    $.each( admins, function( index, conns) {
+      $.each( conns, function( index, conn) {
+        if(conn.open) {
+          conn.send({
+            action: "orientation",
+            absolute: absolute,
+            compass: compass,
+            alpha: alpha,
+            beta: beta,
+            gamma: gamma,
+            change: change
+          });
+        }
+      });
+    });
+  }
+
+  window.addEventListener("deviceorientation", handleOrientation, true);
+
+/*
+  function handleMotion(event) {
+    // Send our DeviceOrientation and DeviceMotion directly to our Admins
+    $.each( admins, function( index, conns) {
+      $.each( conns, function( index, conn) {
+        if(conn.open) {
+          conn.send({
+            action: "motion",
+            accelleration: event.acceleration,
+            accellerationIncludingGravity: event.accelerationIncludingGravity,
+            rotationRate: event.rotationRate,
+            interval: event.interval
+          });
+        }
+      });
+    });
+  }
+
+  window.addEventListener("devicemotion", handleMotion, true);
+*/
 
   function positionUpdate(position) {
     latitude = position.coords.latitude;
     longitude = position.coords.longitude;
-    heading = position.coords.heading;
-    speed = position.coords.speed;
-    accuracy = position.coords.accuracy;
+    if(position.coords.heading) { heading = position.coords.heading; console.log("heading="+position.coords.heading); }
+    if(position.coords.speed) { speed = position.coords.speed; console.log("speed="+position.coords.speed); }
+    if(position.coords.accuracy) { accuracy = position.coords.accuracy; }
 
     // Send our GeoLocation directly to the Admins
     $.each( admins, function( index, conns) {
@@ -350,6 +432,7 @@ $(document).on('pageshow', '#drone' ,function(){
   }
 
   $( window ).on( "orientationchange", function( event ) {
+    change = event.orientation;
     $( "#orientation" ).text( "This device is in " + event.orientation + " mode!" );
   });
 

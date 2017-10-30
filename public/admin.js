@@ -60,6 +60,35 @@ $(document).on('pageshow', '#admin' ,function(){
     }
   });
 
+  function compassHeading( alpha, beta, gamma ) {
+    var _x = beta  ? beta  * degtorad : 0; // beta value
+    var _y = gamma ? gamma * degtorad : 0; // gamma value
+    var _z = alpha ? alpha * degtorad : 0; // alpha value
+
+    var cX = Math.cos( _x );
+    var cY = Math.cos( _y );
+    var cZ = Math.cos( _z );
+    var sX = Math.sin( _x );
+    var sY = Math.sin( _y );
+    var sZ = Math.sin( _z );
+
+    // Calculate Vx and Vy components
+    var Vx = - cZ * sY - sZ * sX * cY;
+    var Vy = - sZ * sY + cZ * sX * cY;
+
+    // Calculate compass heading
+    var compassHeading = Math.atan( Vx / Vy );
+
+    // Convert compass heading to use whole unit circle
+    if( Vy < 0 ) {
+      compassHeading += Math.PI;
+    } else if( Vx < 0 ) {
+      compassHeading += 2 * Math.PI;
+    }
+
+    return compassHeading * ( 180 / Math.PI ); // Compass Heading (in degrees)
+  }
+
   function processReceivedData(conn, data) {
     switch (data.action) {
       case "Updated":
@@ -153,16 +182,17 @@ $(document).on('pageshow', '#admin' ,function(){
         break;
       case "orientation":
         /* Do something with the received x,y,z,absolute,alpha,beta,gamma */
+/*
         $( "#" + conn.peer + " td.orientationX").html(data.x);
         $( "#" + conn.peer + " td.orientationY").html(data.y);
         $( "#" + conn.peer + " td.orientationZ").html(data.z);
-        $( "#" + conn.peer + " td.motionAbsolute").html(data.absolute);
-        $( "#" + conn.peer + " td.motionAlpha").html(data.alpha);
-        $( "#" + conn.peer + " td.motionBeta").html(data.beta);
-        $( "#" + conn.peer + " td.motionGamma").html(data.gamma);
-        $( "#" + conn.peer + " td.heading").html(data.heading);
-        $( "#" + conn.peer + " td.speed").html(data.speed);
-        $( "#" + conn.peer + " td.accuracy").html(data.accuracy);
+*/
+        if(data.absolute) { $( "#" + conn.peer + " td.orientationAbsolute").html(data.absolute); }
+        if(data.alpha) { $( "#" + conn.peer + " td.orientationAlpha").html(data.alpha); }
+        if(data.beta) { $( "#" + conn.peer + " td.orientationBeta").html(data.beta); }
+        if(data.gamma) { $( "#" + conn.peer + " td.orientationGamma").html(data.gamma); }
+        if(data.change) { $( "#" + conn.peer + " td.orientationChange").html(data.change); }
+        if(data.compass) { $( "#" + conn.peer + " td.orientationCompass").html(data.compass); }
 
         // Remember the orientation metrics so we can send them along with an image
         if(!metrics[conn.peer]) {
@@ -171,19 +201,20 @@ $(document).on('pageshow', '#admin' ,function(){
         if(!metrics[conn.peer].orientation) {
           metrics[conn.peer].orientation = {};
         }
+/*
         metrics[conn.peer].orientation.x = data.x;
         metrics[conn.peer].orientation.y = data.y;
         metrics[conn.peer].orientation.z = data.z;
-        metrics[conn.peer].orientation.absolute = data.absolute;
-        metrics[conn.peer].orientation.alpha = data.alpha;
-        metrics[conn.peer].orientation.beta = data.beta;
-        metrics[conn.peer].orientation.gamma = data.gamma;
-        metrics[conn.peer].orientation.heading = data.heading;
-        metrics[conn.peer].orientation.speed = data.speed;
-        metrics[conn.peer].orientation.accuracy = data.accuracy;
+*/
+        if(data.absolute) { metrics[conn.peer].orientation.absolute = data.absolute; }
+        if(data.alpha) { metrics[conn.peer].orientation.alpha = data.alpha; }
+        if(data.beta) { metrics[conn.peer].orientation.beta = data.beta; }
+        if(data.gamma) { metrics[conn.peer].orientation.gamma = data.gamma; }
+        if(data.change) { metrics[conn.peer].orientation.change = data.change; }
+        if(data.compass) { metrics[conn.peer].orientation.compass = data.compass; }
         var marker = markers[conn.peer];
         if(marker) {
-          var rotation = metrics[conn.peer].orientation.alpha || 0;
+          var rotation = data.heading || data.compass || 0;
           marker.setRotationAngle(rotation);
         }
         break;
@@ -196,14 +227,20 @@ $(document).on('pageshow', '#admin' ,function(){
           marker.setLatLng(newLatLng);
           //console.log("geolocation updated marker for " + conn.peer);
         } else {
-          var rotation = metrics[conn.peer].orientation.alpha || 0;
+          var rotation = 0;
+          if(metrics.hasOwnProperty(conn.peer) && metrics[conn.peer].hasOwnProperty("orientation")) {
+            rotation = metrics[conn.peer].orientation.alpha;
+          }
           marker = L.marker([data.latitude, data.longitude],{ rotationAngle: rotation, rotationOrigin: 'bottom center' }).addTo(map);
           marker.bindPopup(conn.peer);
           markers[conn.peer] = marker;
           //console.log("geolocation created marker for " + conn.peer);
         }
-        $( "#" + conn.peer + " td.geolocationLatitude").html(data.latitude);
-        $( "#" + conn.peer + " td.geolocationLongitude").html(data.longitude);
+        if(data.latitude) { $( "#" + conn.peer + " td.geolocationLatitude").html(data.latitude); }
+        if(data.longitude) { $( "#" + conn.peer + " td.geolocationLongitude").html(data.longitude); }
+        if(data.heading) { $( "#" + conn.peer + " td.geolocationHeading").html(data.heading); }
+        if(data.speed) { $( "#" + conn.peer + " td.geolocationSpeed").html(data.speed); }
+        if(data.accuracy) { $( "#" + conn.peer + " td.geolocationAccuracy").html(data.accuracy); }
 
         // Remember the geolocation metrics so we can send them along with an image
         if(!metrics[conn.peer]) {
@@ -212,8 +249,11 @@ $(document).on('pageshow', '#admin' ,function(){
         if(!metrics[conn.peer].geolocation) {
           metrics[conn.peer].geolocation = {};
         }
-        metrics[conn.peer].geolocation.latitude = data.latitude;
-        metrics[conn.peer].geolocation.longitude = data.longitude;
+        if(data.latitude) { metrics[conn.peer].geolocation.latitude = data.latitude; }
+        if(data.longitude) { metrics[conn.peer].geolocation.longitude = data.longitude; }
+        if(data.heading) { metrics[conn.peer].geolocation.heading = data.heading; }
+        if(data.speed) { metrics[conn.peer].geolocation.speed = data.speed; }
+        if(data.accuracy) { metrics[conn.peer].geolocation.accuracy = data.accuracy; }
         break;
       default:
         console.log("Unknown message received from " + conn.peer + ": " + JSON.stringify(data));
@@ -337,7 +377,7 @@ $(document).on('pageshow', '#admin' ,function(){
             console.log('dta is enabled. Sending data to dta url: ' + config.dta.url);
             var data = {
               image: image,
-              compass: metrics[conn.peer].geolocation.heading,
+              compass: metrics[conn.peer].geolocation.heading || metrics[conn.peer].orientation.compass || 0,
               lat: metrics[conn.peer].geolocation.latitude,
               long: metrics[conn.peer].geolocation.longitude,
               fov: 120
@@ -415,7 +455,7 @@ $(document).on('pageshow', '#admin' ,function(){
     var latitude = position.coords.latitude;
     var longitude = position.coords.longitude;
     map.setView([latitude,longitude],13);
-    L.marker([latitude, longitude]).addTo(map).bindPopup(peer.id);
+    //L.marker([latitude, longitude]).addTo(map).bindPopup(peer.id);
   }
 
   function positionError(err) {
