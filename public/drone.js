@@ -158,22 +158,26 @@ $(document).on('pageshow', '#drone' ,function(){
           }).done(function ( resp ) {
             console.log("objlob ajax done: " + JSON.stringify(resp));
 
-            // Send the objlob back to Admin as an Updated action
-            $.each( admins, function(peer, admin) {
-              $.each( admin, function(index, conn) {
-                console.log("objlob sending Updated to " + conn.peer);
-	        conn.send({
-	          action: "Updated",
-                  timestamp: data.timestamp,
-                  objlob: {
-	            lat: latitude,
-	            lon: longitude,
-                    aob: resp.aob,
-	            angleUnit: "deg"
-                  }
-	        });
-	      }); // each conn
-	    }); // each admin
+	    if(resp.aob) {
+              // Send the objlob back to Admin as an Updated action
+              $.each( admins, function(peer, admin) {
+                $.each( admin, function(index, conn) {
+                  console.log("objlob sending Updated to " + conn.peer);
+	          conn.send({
+	            action: "Updated",
+                    timestamp: data.timestamp,
+                    objlob: {
+	              lat: latitude,
+	              lon: longitude,
+                      aob: resp.aob,
+	              angleUnit: "deg"
+                    }
+	          });
+	        }); // each conn
+	      }); // each admin
+	    } else {
+              console.log("The AOB return was null, which means no object was found in the image submitted.");
+	    }
           }); // ajax done()
         }
         break;

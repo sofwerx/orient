@@ -119,18 +119,18 @@ $(document).on('pageshow', '#admin' ,function(){
             console.log("we have collected >= 3 objlob responses for " + data.timestamp);
 
             // These are the coords for Triangulate's TargetLocate
-	    /*
             data = {
               "coords": updates[data.timestamp]
             }
-	    */
+
+	    /*
 	    data = {
 	      "coords": [
 	        {"lat": 27.957261, "lon": -82.436587, "aob": 134.91444444, "angleUnit": "deg"},
 		{"lat": 27.956774, "lon": -82.436587, "aob": 38.17583333, "angleUnit": "deg"},
 		{"lat": 27.957050, "lon": -82.435950, "aob": 269.50611111, "angleUnit": "deg"}
               ]
-	    }
+	    }*/
 
             console.log("POSTing to triangulate: " + JSON.stringify(data));
 
