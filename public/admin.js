@@ -112,7 +112,6 @@ $(document).on('pageshow', '#admin' ,function(){
             break;
           }
 
-
           // If we have >= 3 updated messages to process, call Triangulate
           if(Object.keys(updates[data.timestamp]).length >= 3) {
 
@@ -155,6 +154,28 @@ $(document).on('pageshow', '#admin' ,function(){
                }
                // Re-center the map to the triangulated latitude/longitude
                map.setView(triangulated.getLatLng(),map.getZoom());
+
+               data = {
+                 "lat": result.targetLoc.lat,
+                 "lon": result.targetLoc.lon,
+                 "identity": "hostile",
+                 "dimension": "land-unit"
+                 "entity": "military",
+                 "type": "E-V-A-T"
+                }
+
+                $.ajax({
+                  type: "POST",
+                  url: config.pushcot.url,
+                  data: JSON.stringify(data),
+                  timeout: 10000
+                }).error(function (jqXHR, textStatus, errorThrown) {
+                  console.log("pushcot error text: " + textStatus);
+                  console.log("pushcot error thrown: " + errorThrown);
+                }).done(function (result) {
+                  console.log("pushcot ajax done: " + JSON.stringify(result));
+		});
+                console.log("pushcot ajax sent");
              }
             });
             console.log("triangulate ajax sent");
@@ -236,7 +257,11 @@ $(document).on('pageshow', '#admin' ,function(){
           if(metrics.hasOwnProperty(conn.peer) && metrics[conn.peer].hasOwnProperty("orientation")) {
             rotation = metrics[conn.peer].orientation.alpha;
           }
-          marker = L.marker([data.latitude, data.longitude],{ rotationAngle: rotation, rotationOrigin: 'bottom center' }).addTo(map);
+          var greenMarker = L.AwesomeMarkers.icon({
+	     icon: 'user-circle-o',
+	     markerColor: 'green'
+	  });
+          marker = L.marker([data.latitude, data.longitude],{ rotationAngle: rotation, rotationOrigin: 'bottom center', icon: greenMarker }).addTo(map);
           marker.bindPopup(conn.peer);
           markers[conn.peer] = marker;
           //console.log("geolocation created marker for " + conn.peer);
