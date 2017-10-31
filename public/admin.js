@@ -119,9 +119,18 @@ $(document).on('pageshow', '#admin' ,function(){
             console.log("we have collected >= 3 objlob responses for " + data.timestamp);
 
             // These are the coords for Triangulate's TargetLocate
+	    /*
             data = {
               "coords": updates[data.timestamp]
             }
+	    */
+	    data = {
+	      "coords": [
+	        {"lat": 27.957261, "lon": -82.436587, "aob": 134.91444444, "angleUnit": "deg"},
+		{"lat": 27.956774, "lon": -82.436587, "aob": 38.17583333, "angleUnit": "deg"},
+		{"lat": 27.957050, "lon": -82.435950, "aob": 269.50611111, "angleUnit": "deg"}
+              ]
+	    }
 
             console.log("POSTing to triangulate: " + JSON.stringify(data));
 
@@ -136,32 +145,34 @@ $(document).on('pageshow', '#admin' ,function(){
             }).done(function (result) {
               console.log("triangulate ajax done");
 
-             if(result.hasIntersect) {
-               console.log("triangulate intersection found!" + JSON.stringify(result));
-               if(triangulated) {
-                 var newLatLng = new L.LatLng(result.targetLoc.lat, result.targetLoc.lon);
-                 triangulated.setLatLng(newLatLng); 
-                 console.log("triangulate map location updated");
-               } else {
-		 var redMarker = L.AwesomeMarkers.icon({
-		     icon: 'dot-circle-o',
-		     markerColor: 'red'
-		 });
-                 triangulated = L.marker([result.targetLoc.lat, result.targetLoc.lon], {icon: redMarker}).addTo(map);
+              if(result.hasIntersect) {
+                console.log("triangulate intersection found!" + JSON.stringify(result));
+                if(triangulated) {
+                  var newLatLng = new L.LatLng(result.targetLoc.lat, result.targetLoc.lon);
+                  triangulated.setLatLng(newLatLng); 
+                  console.log("triangulate map location updated");
+                } else {
+		  /*var redMarker = L.AwesomeMarkers.icon({
+		      icon: 'dot-circle-o',
+		      markerColor: 'red'
+		  });
+                  triangulated = L.marker([result.targetLoc.lat, result.targetLoc.lon], {icon: redMarker}).addTo(map);
+		  */
+                  triangulated = L.marker([result.targetLoc.lat, result.targetLoc.lon]).addTo(map);
 
-                 triangulated.bindPopup("Triangulated");
-                 console.log("triangulate map location created");
-               }
-               // Re-center the map to the triangulated latitude/longitude
-               map.setView(triangulated.getLatLng(),map.getZoom());
+                  triangulated.bindPopup("Triangulated");
+                  console.log("triangulate map location created");
+                }
+                // Re-center the map to the triangulated latitude/longitude
+                map.setView(triangulated.getLatLng(),map.getZoom());
 
-               data = {
-                 "lat": result.targetLoc.lat,
-                 "lon": result.targetLoc.lon,
-                 "identity": "hostile",
-                 "dimension": "land-unit"
-                 "entity": "military",
-                 "type": "E-V-A-T"
+                data = {
+                  "lat": result.targetLoc.lat,
+                  "lon": result.targetLoc.lon,
+                  "identity": "hostile",
+                  "dimension": "land-unit",
+                  "entity": "military",
+                  "type": "E-V-A-T"
                 }
 
                 $.ajax({
@@ -176,7 +187,9 @@ $(document).on('pageshow', '#admin' ,function(){
                   console.log("pushcot ajax done: " + JSON.stringify(result));
 		});
                 console.log("pushcot ajax sent");
-             }
+              } else {
+                console.log("No intersection found, no coordinates to plot");
+	      }
             });
             console.log("triangulate ajax sent");
           } else {
@@ -257,11 +270,13 @@ $(document).on('pageshow', '#admin' ,function(){
           if(metrics.hasOwnProperty(conn.peer) && metrics[conn.peer].hasOwnProperty("orientation")) {
             rotation = metrics[conn.peer].orientation.alpha;
           }
-          var greenMarker = L.AwesomeMarkers.icon({
+          /*var greenMarker = L.AwesomeMarkers.icon({
 	     icon: 'user-circle-o',
 	     markerColor: 'green'
 	  });
           marker = L.marker([data.latitude, data.longitude],{ rotationAngle: rotation, rotationOrigin: 'bottom center', icon: greenMarker }).addTo(map);
+	  */
+          marker = L.marker([data.latitude, data.longitude],{ rotationAngle: rotation, rotationOrigin: 'bottom center' }).addTo(map);
           marker.bindPopup(conn.peer);
           markers[conn.peer] = marker;
           //console.log("geolocation created marker for " + conn.peer);
