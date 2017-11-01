@@ -19,6 +19,25 @@ $(document).on('pageshow', '#admin' ,function(){
   var updates = {};
   var triangulated;
   var periodicTriangulate;
+  
+  // ATAK icon params
+  atak_data = {
+      "uid": "person",
+      "identity": "friend",
+      "dimension": "land-unit",
+      "entity": "military",
+      "type": "U-C"
+  }
+  
+  // Known good data to use if we lack any lat/lon coordinates (indoor demo)
+  var drone_data = {
+      "coords": [
+        {"lat": 27.957261, "lon": -82.436587, "aob": 134.91444444, "angleUnit": "deg"},
+        {"lat": 27.956774, "lon": -82.436587, "aob": 38.17583333, "angleUnit": "deg"},
+        {"lat": 27.957050, "lon": -82.435950, "aob": 269.50611111, "angleUnit": "deg"}
+      ]
+    }
+  var fuzz = 4.0/10000.0    // amount to move each point for indoor demo
 
   L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
@@ -135,14 +154,8 @@ $(document).on('pageshow', '#admin' ,function(){
               "coords": []
             }
 
-            // Mock data to use if we lack any lat/lon coordinates
-            mock_data = {
-              "coords": [
-                {"lat": 27.957261, "lon": -82.436587, "aob": 134.91444444, "angleUnit": "deg"},
-                {"lat": 27.956774, "lon": -82.436587, "aob": 38.17583333, "angleUnit": "deg"},
-                {"lat": 27.957050, "lon": -82.435950, "aob": 269.50611111, "angleUnit": "deg"}
-              ]
-            }
+
+
             var invalid;
             $.each( updates[data.timestamp], function( index, coord) {
               if(!(coord.hasOwnProperty("lat") && coord.hasOwnProperty("lon") && coord.hasOwnProperty("aob") && coord["aob"])) {
@@ -150,9 +163,15 @@ $(document).on('pageshow', '#admin' ,function(){
               }
 	    });
 	    if(invalid) {
-              // We do not have a lat/lon/aob in this Triangulate, fudge it
-              triangulate_data["coords"] = mock_data["coords"];
-              console.log("MISSING LAT/LON/AOB, using mock data for triangulate");
+              // We do not have a lat/lon/aob in this Triangulate (e.g.indoor demo), use stored values
+             $.each(drone_data["coords"], function(index, coord_set) {
+               coord_set["lat"] = coord_set["lat"] + fuzz;
+               coord_set["lon"] = coord_set["lon"] + fuzz;
+              });
+              triangulate_data["coords"] = drone_data["coords"];
+              console.log("MISSING LAT/LON/AOB, using known good data for triangulate");
+              atak_data["type"] = "U"
+
 	    } else {
               triangulate_data["coords"] = updates[data.timestamp];
               console.log("We have valid lat/lon/aob coordinates to submit to triangulate!!!");
@@ -185,16 +204,9 @@ $(document).on('pageshow', '#admin' ,function(){
                 }
                 // Re-center the map to the triangulated latitude/longitude
                 map.setView(triangulated.getLatLng(),map.getZoom());
-
-                data = {
-                  "lat": result.targetLoc.lat,
-                  "lon": result.targetLoc.lon,
-                  "identity": "hostile",
-                  "dimension": "land-unit",
-                  "entity": "military",
-                  "type": "E-V-A-T"
-                }
-
+                atak_data["lat"] = result.targetLoc.lat
+                atak_data["lon"] = result.targetLoc.lon
+                
                 $.ajax({
                   type: "POST",
                   url: config.pushcot.url,
