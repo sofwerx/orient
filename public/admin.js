@@ -85,7 +85,7 @@ $(document).on('pageshow', '#admin' ,function(){
 
     if($(this).html() == "Enable Triangulate") {
       $(this).html('Disable Triangulate')
-      periodicTriangulate = setInterval(triangulateNow, 2000);
+      periodicTriangulate = setInterval(triangulateNow, config.refresh.triangulate);
     } else {
       $(this).html('Enable Triangulate')
       if(periodicTriangulate) clearInterval(periodicTriangulate);

@@ -76,6 +76,7 @@ var objlob_config=process.env.OBJLOB_CONFIG || "{ enabled: false }";
 var triangulate_config=process.env.TRIANGULATE_CONFIG || "{ enabled: false }";
 var pushcot_config=process.env.PUSHCOT_CONFIG || "{ enabled: false }";
 var media_config=process.env.MEDIA_CONFIG || '{ audio: true, video: { width: { min: 640, max: 1920 }, height: { min: 480, max: 1080 }, frameRate: { ideal: 5 }, facingMode: { ideal: "environment" } } }';
+var refresh_config=process.env.REFRESH_CONFIG || '{ triangulate: 2000 }';
 var staoi_url=process.env.STAOI_URL;
 
 app.post('/nifi', function (req, res) {
@@ -118,6 +119,7 @@ app.get('/config.js', function (req, res) {
   output = output + `, triangulate: ${triangulate_config}`;
   output = output + `, pushcot: ${pushcot_config}`;
   output = output + `, media: ${media_config}`;
+  output = output + `, refresh: ${refresh_config}`;
   output = output + " };\n";
 
   res.setHeader('Content-Type', 'application/javascript');
