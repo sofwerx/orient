@@ -105,8 +105,12 @@ $(document).on('pageshow', '#admin' ,function(){
           }
           if(data.objlob.hasOwnProperty("lat") && data.objlob.hasOwnProperty("lon") &&
              data.objlob.hasOwnProperty("aob") && data.objlob.hasOwnProperty("angleUnit")) {
-            console.log("Pushing objlob to list for [" + conn.peer + "/" + data.timestamp + "]" );
-            updates[data.timestamp].push(data.objlob);
+	    if(data.objlob["aob"]) {
+              console.log("No person was identified by objlob, skipping for [" + conn.peer + "/" + data.timestamp + "]" );
+	    } else {
+              console.log("Pushing objlob to list for [" + conn.peer + "/" + data.timestamp + "]" );
+              updates[data.timestamp].push(data.objlob);
+	    }
           } else {
             console.log("WARNING: Disregarded action: Updated did not include both a lat and a lon");
             break;
