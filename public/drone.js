@@ -31,17 +31,6 @@ $(document).on('pageshow', '#drone' ,function(){
   // Compatibility shim
   navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
 
-  // Use a 60fps rear "environment" facing camera
-  var media_constraints = {
-    audio: true,
-    video: {
-      width: { min: 640, max: 1920 },
-      height: { min: 480, max: 1080 },
-      frameRate: { ideal: 60 },
-      facingMode: { ideal: "environment" }
-    }
-  };
-
   var inputVideo = $( "#my-video" )[0];
   var inputCanvas = $( "#my-canvas" )[0];
   var inputCtx = inputCanvas.getContext( '2d' );
@@ -59,7 +48,7 @@ $(document).on('pageshow', '#drone' ,function(){
   //window.requestAnimationFrame( drawToCanvas );
 
   // Prepare the audio/video stream
-  navigator.getUserMedia(media_constraints, function(stream){
+  navigator.getUserMedia(config.media, function(stream){
     // View our self-view
     $('#my-video').prop('src', URL.createObjectURL(stream));
 
