@@ -300,53 +300,6 @@ $(document).on('pageshow', '#drone' ,function(){
     }
   });
 
-/*
-  var gnargs = {
-    frequency:50,                  // ( How often the object sends the values - milliseconds )
-    gravityNormalized:true,        // ( If the gravity related values to be normalized )
-    orientationBase:GyroNorm.WORLD,// ( Can be GyroNorm.GAME or GyroNorm.WORLD.
-                                   //   gn.GAME returns orientation values with respect to the head direction of the device.
-                                   //   gn.WORLD returns the orientation values with respect to the actual north direction of the world. )
-    decimalCount:2,                // ( How many digits after the decimal point will there be in the return values )
-    logger:null,                   // ( Function to be called to log messages from gyronorm.js )
-    screenAdjusted:false           // ( If set to true it will return screen adjusted values. )
-  };
-
-  var gn = new GyroNorm();
-  gn.init(gnargs).then(function(){
-    gn.start(function(data){
-      x = data.dm.x;
-      y = data.dm.y;
-      z = data.dm.z;
-      absolute = data.do.absolute;
-      alpha = data.do.alpha;
-      beta = data.do.beta;
-      gamma = data.do.gamma;
-
-      // Send our DeviceOrientation and DeviceMotion directly to our Admins
-      $.each( admins, function( index, conns) {
-        $.each( conns, function( index, conn) {
-          if(conn.open) {
-            conn.send({
-              action: "orientation",
-              x: x,
-              y: y,
-              z: z,
-              absolute: absolute,
-              alpha: alpha,
-              beta: beta,
-              gamma: gamma
-            });
-          }
-        });
-      });
-    });
-  }).catch(function(e){
-    // Catch if the DeviceOrientation or DeviceMotion is not supported by the browser or device
-    alert("DeviceOrientation and/or DeviceMotion are not available");
-  });
-*/
-
   function handleOrientation(event) {
     alpha = event.alpha; 
     beta = event.beta; 

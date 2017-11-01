@@ -152,12 +152,6 @@ $(document).on('pageshow', '#admin' ,function(){
                   triangulated.setLatLng(newLatLng); 
                   console.log("triangulate map location updated");
                 } else {
-		  /*var redMarker = L.AwesomeMarkers.icon({
-		      icon: 'dot-circle-o',
-		      markerColor: 'red'
-		  });
-                  triangulated = L.marker([result.targetLoc.lat, result.targetLoc.lon], {icon: redMarker}).addTo(map);
-		  */
                   triangulated = L.marker([result.targetLoc.lat, result.targetLoc.lon]).addTo(map);
 
                   triangulated.bindPopup("Triangulated");
@@ -270,16 +264,10 @@ $(document).on('pageshow', '#admin' ,function(){
           if(metrics.hasOwnProperty(conn.peer) && metrics[conn.peer].hasOwnProperty("orientation")) {
             rotation = metrics[conn.peer].orientation.alpha;
           }
-          /*var greenMarker = L.AwesomeMarkers.icon({
-	     icon: 'user-circle-o',
-	     markerColor: 'green'
-	  });
-          marker = L.marker([data.latitude, data.longitude],{ rotationAngle: rotation, rotationOrigin: 'bottom center', icon: greenMarker }).addTo(map);
-	  */
           marker = L.marker([data.latitude, data.longitude],{ rotationAngle: rotation, rotationOrigin: 'bottom center' }).addTo(map);
           marker.bindPopup(conn.peer);
           markers[conn.peer] = marker;
-          //console.log("geolocation created marker for " + conn.peer);
+          console.log("geolocation created marker for " + conn.peer);
         }
         if(data.latitude) { $( "#" + conn.peer + " td.geolocationLatitude").html(data.latitude); }
         if(data.longitude) { $( "#" + conn.peer + " td.geolocationLongitude").html(data.longitude); }
