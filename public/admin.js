@@ -490,8 +490,6 @@ $(document).on('pageshow', '#admin' ,function(){
       case "socket-closed":
         peer.disconnect();
         break;
-      default:
-        alert(err.message);
     }
   });
 
