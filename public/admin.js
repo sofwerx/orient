@@ -52,7 +52,7 @@ $(document).on('pageshow', '#admin' ,function(){
     port: config.port,
     secure: config.secure,
     path: '/peerjs',
-    debug: 3,
+    debug: 1,
     config: config.peer
   });
 
@@ -137,10 +137,10 @@ $(document).on('pageshow', '#admin' ,function(){
             updates[data.timestamp] = [];
           }
           if(data.objlob["aob"]) {
-            console.log("No person was identified by objlob, skipping for [" + conn.peer + "/" + data.timestamp + "]" );
-          } else {
-            //console.log("Pushing objlob to list for [" + conn.peer + "/" + data.timestamp + "]" );
             updates[data.timestamp].push(data.objlob);
+            //console.log("Pushing objlob to list for [" + conn.peer + "/" + data.timestamp + "]" );
+          } else {
+            console.log("No person was identified by objlob, skipping for [" + conn.peer + "/" + data.timestamp + "]" );
           }
 
           // If we have >= 3 updated messages to process, call Triangulate
@@ -154,11 +154,9 @@ $(document).on('pageshow', '#admin' ,function(){
               "coords": []
             }
 
-
-
             var invalid;
             $.each( updates[data.timestamp], function( index, coord) {
-              if(!(coord.hasOwnProperty("lat") && coord.hasOwnProperty("lon") && coord.hasOwnProperty("aob") && coord["aob"])) {
+              if(!(coord.hasOwnProperty("lat") && coord.hasOwnProperty("lon"))) {
 	        invalid = true;
               }
 	    });
@@ -206,11 +204,13 @@ $(document).on('pageshow', '#admin' ,function(){
                 map.setView(triangulated.getLatLng(),map.getZoom());
                 atak_data["lat"] = result.targetLoc.lat
                 atak_data["lon"] = result.targetLoc.lon
+
+                console.log("pushcot sending atak_data: " + JSON.stringify(atak_data));
                 
                 $.ajax({
                   type: "POST",
                   url: config.pushcot.url,
-                  data: JSON.stringify(data),
+                  data: JSON.stringify(atak_data),
                   timeout: 10000
                 }).error(function (jqXHR, textStatus, errorThrown) {
                   console.log("pushcot error text: " + textStatus);
