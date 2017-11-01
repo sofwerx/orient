@@ -61,13 +61,13 @@ $(document).on('pageshow', '#admin' ,function(){
   }
 
   $( "#captureButton" ).bind( "click", function(event, ui) {
-    console.log("Triangulate button clicked");
+    console.log("Triangulate button clicked: val: '" + $(this).val() + "' html: '" + $(this).html() + "'");
 
-    if($(this).val() == "Enable Triangulate") {
-      $(this).val('Disable Triangulate')
+    if($(this).html() == "Enable Triangulate") {
+      $(this).html('Disable Triangulate')
       periodicTriangulate = setInterval(triangulateNow, 2000);
     } else {
-      $(this).val('Enable Triangulate')
+      $(this).html('Enable Triangulate')
       if(periodicTriangulate) clearInterval(periodicTriangulate);
     }
 
