@@ -39,19 +39,20 @@ $(document).on('pageshow', '#admin' ,function(){
 
   function triangulateNow() {
     if(Object.keys(drones).length >= 3) {
-      console.log("3 or more drones available, sending Update action to each drone");
+      console.log("sending Update action to 3 or more drones");
       var date = new Date();
       var timestamp = date.getTime();
       updates[timestamp] = [];
       $.each( drones, function( peer, drone) {
-        console.log("Enumerating drone peer " + peer + " for timestamp " + timestamp);
+        //console.log("Enumerating drone peer " + peer + " for timestamp " + timestamp);
 
         $.each( drones[peer], function( index, conn) {
-          console.log("sending Update action to peer " + peer + " index " + index + " for timestamp " + timestamp);
-          conn.send({
+          data = {
             action: "Update",
             timestamp: timestamp
-          });
+          }
+          console.log("sending Update action to peer " + peer + " index " + index + " data: " + JSON.stringify(data));
+          conn.send(data);
         });
 
       });
@@ -105,56 +106,64 @@ $(document).on('pageshow', '#admin' ,function(){
   function processReceivedData(conn, data) {
     switch (data.action) {
       case "Updated":
-        console.log("Updated action received from a drone: " + JSON.stringify(data));
+        console.log("receiving Updated action from peer " + conn.peer + " data: " + JSON.stringify(data));
 
         // If triangulate is enabled and we have been given a timestamp to correlate
         if(config.triangulate.enabled && data.timestamp) {
-          console.log("triangulate is enabled");
-          console.log("timestamp " + data.timestamp + " received.");
+          //console.log("triangulate is enabled");
+          //console.log("timestamp " + data.timestamp + " received.");
 
           // Push the Updated message objlob property to the timestamp correlated array
           if(!updates[data.timestamp]) {
             updates[data.timestamp] = [];
           }
-          if(data.objlob.hasOwnProperty("lat") && data.objlob.hasOwnProperty("lon") &&
-             data.objlob.hasOwnProperty("aob") && data.objlob.hasOwnProperty("angleUnit")) {
-	    if(data.objlob["aob"]) {
-              console.log("No person was identified by objlob, skipping for [" + conn.peer + "/" + data.timestamp + "]" );
-	    } else {
-              console.log("Pushing objlob to list for [" + conn.peer + "/" + data.timestamp + "]" );
-              updates[data.timestamp].push(data.objlob);
-	    }
+          if(data.objlob["aob"]) {
+            console.log("No person was identified by objlob, skipping for [" + conn.peer + "/" + data.timestamp + "]" );
           } else {
-            console.log("WARNING: Disregarded action: Updated did not include both a lat and a lon");
-            break;
+            //console.log("Pushing objlob to list for [" + conn.peer + "/" + data.timestamp + "]" );
+            updates[data.timestamp].push(data.objlob);
           }
 
           // If we have >= 3 updated messages to process, call Triangulate
           if(Object.keys(updates[data.timestamp]).length >= 3) {
 
             // We have collected >= 3 objlob responses.
-            console.log("we have collected >= 3 objlob responses for " + data.timestamp);
+            console.log("we have collected >= 3 objlob responses for " + data.timestamp + " updates:" + JSON.stringify(updates[data.timestamp]) );
 
             // These are the coords for Triangulate's TargetLocate
-            data = {
-              "coords": updates[data.timestamp]
+            triangulate_data = {
+              "coords": []
             }
 
-	    /*
-	    data = {
-	      "coords": [
-	        {"lat": 27.957261, "lon": -82.436587, "aob": 134.91444444, "angleUnit": "deg"},
-		{"lat": 27.956774, "lon": -82.436587, "aob": 38.17583333, "angleUnit": "deg"},
-		{"lat": 27.957050, "lon": -82.435950, "aob": 269.50611111, "angleUnit": "deg"}
+            // Mock data to use if we lack any lat/lon coordinates
+            mock_data = {
+              "coords": [
+                {"lat": 27.957261, "lon": -82.436587, "aob": 134.91444444, "angleUnit": "deg"},
+                {"lat": 27.956774, "lon": -82.436587, "aob": 38.17583333, "angleUnit": "deg"},
+                {"lat": 27.957050, "lon": -82.435950, "aob": 269.50611111, "angleUnit": "deg"}
               ]
-	    }*/
+            }
+            var invalid;
+            $.each( updates[data.timestamp], function( index, coord) {
+              if(!(coord.hasOwnProperty("lat") && coord.hasOwnProperty("lon") && coord.hasOwnProperty("aob") && coord["aob"])) {
+	        invalid = true;
+              }
+	    });
+	    if(invalid) {
+              // We do not have a lat/lon/aob in this Triangulate, fudge it
+              triangulate_data["coords"] = mock_data["coords"];
+              console.log("MISSING LAT/LON/AOB, using mock data for triangulate");
+	    } else {
+              triangulate_data["coords"] = updates[data.timestamp];
+              console.log("We have valid lat/lon/aob coordinates to submit to triangulate!!!");
+            }
 
-            console.log("POSTing to triangulate: " + JSON.stringify(data));
+            console.log("POSTing to triangulate: " + JSON.stringify(triangulate_data));
 
             $.ajax({
               type: "POST",
               url: config.triangulate.url,
-              data: JSON.stringify(data),
+              data: JSON.stringify(triangulate_data),
               timeout: 10000
             }).error(function (jqXHR, textStatus, errorThrown) {
               console.log("triangulate error text: " + textStatus);
@@ -196,15 +205,15 @@ $(document).on('pageshow', '#admin' ,function(){
                   console.log("pushcot error thrown: " + errorThrown);
                 }).done(function (result) {
                   console.log("pushcot ajax done: " + JSON.stringify(result));
-		});
+                });
                 console.log("pushcot ajax sent");
               } else {
                 console.log("No intersection found, no coordinates to plot");
-	      }
+              }
             });
             console.log("triangulate ajax sent");
           } else {
-            console.log("we only have " + Object.keys(updates[data.timestamp]).length + " objlobs for " + data.timestamp);
+            console.log("We only have " + Object.keys(updates[data.timestamp]).length + " objlobs for timestamp " + data.timestamp);
           } // If we have >= 3 updated messages to process
 
         } // If triangulate is enabled and we have been given a timestamp to correlate
