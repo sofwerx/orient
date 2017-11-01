@@ -18,6 +18,7 @@ $(document).on('pageshow', '#admin' ,function(){
   var metrics = {};
   var updates = {};
   var triangulated;
+  var periodicTriangulate;
 
   L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
@@ -36,18 +37,17 @@ $(document).on('pageshow', '#admin' ,function(){
     config: config.peer
   });
 
-  $( "#captureButton" ).bind( "click", function(event, ui) {
-    console.log("Capture button clicked");
+  function triangulateNow() {
     if(Object.keys(drones).length >= 3) {
       console.log("3 or more drones available, sending Update action to each drone");
       var date = new Date();
       var timestamp = date.getTime();
       updates[timestamp] = [];
       $.each( drones, function( peer, drone) {
-        console.log("Enumerating drone peer " + peer);
+        console.log("Enumerating drone peer " + peer + " for timestamp " + timestamp);
 
         $.each( drones[peer], function( index, conn) {
-          console.log("sending Update action to peer " + peer + " index " + index);
+          console.log("sending Update action to peer " + peer + " index " + index + " for timestamp " + timestamp);
           conn.send({
             action: "Update",
             timestamp: timestamp
@@ -56,8 +56,21 @@ $(document).on('pageshow', '#admin' ,function(){
 
       });
     } else {
-      console.log("We only have " + Object.keys(drones).length + " drones available. Cannot triangulate.");
+      console.log("We only have " + Object.keys(drones).length + " drones available. Cannot triangulate. Skipping.");
     }
+  }
+
+  $( "#captureButton" ).bind( "click", function(event, ui) {
+    console.log("Triangulate button clicked");
+
+    if($(this).val() == "Enable Triangulate") {
+      $(this).val('Disable Triangulate')
+      periodicTriangulate = setInterval(triangulateNow, 2000);
+    } else {
+      $(this).val('Enable Triangulate')
+      if(periodicTriangulate) clearInterval(periodicTriangulate);
+    }
+
   });
 
   function compassHeading( alpha, beta, gamma ) {
