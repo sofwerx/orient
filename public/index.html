@@ -20,22 +20,34 @@
   <script type="text/javascript" src="index.js"></script>
   <script type="text/javascript" src="admin.js"></script>
   <script type="text/javascript" src="drone.js"></script>
+  <link rel="stylesheet" href="/index.css">
 </head>
 <body>
-  <div id="index" data-role="page">
-    <div data-role="header">
-     <h1>Orient</h1>
+  <div id="index" data-role="page" style="background-color:#d36c30;">
+    <div data-role="header" style="background-color:#d36c30;">
+      <center>
+          <img src="images/Sofwerx_logo_ko.png" width="900" height="278"/>
+      </center>
     </div>
     <div data-role="navbar">
       <ul>
        <li>
-         <a href="drone.html" data-prefetch="true"><img src="images/drone.svg" width="200" height="200">drone.html</img></a>
+         <a href="drone.html" data-prefetch="true"><img src="images/drone.svg" width="400" height="400"></img><h2 class="subtext">Mobile Autonomous Sensor Node</h2></a>
        </li>
        <li>
-         <a href="admin.html" data-prefetch="true"><img src="images/admin.svg" width="200" height="200">admin.html</img></a>
+         <a href="admin.html" data-prefetch="true"><img src="images/admin.svg" width="400" height="400"><h2 class="subtext">Distributed Telemetry Aquisition</h2></img></a>
        </li>
      </ul>
    </div>
+
+    <div id="synth_target">
+      <center>
+      <h1 style="background-color:#d36c30;">
+        Synthetic Target Area of Interest
+      </h1>
+      </center>
+    </div>
+
  </div>
 </body>
 </html>
