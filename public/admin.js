@@ -127,6 +127,11 @@ $(document).on('pageshow', '#admin' ,function(){
       case "Updated":
         console.log("receiving Updated action from peer " + conn.peer + " data: " + JSON.stringify(data));
 
+        if(data.resp) {
+          if(data.resp.object_scores) { $( "#" + conn.peer + " td.objectScores").html(data.resp.object_scores); }
+          if(data.resp.object_found) { $( "#" + conn.peer + " td.objectFound").html(data.resp.object_found); }
+	}
+
         // If triangulate is enabled and we have been given a timestamp to correlate
         if(config.triangulate.enabled && data.timestamp) {
           //console.log("triangulate is enabled");

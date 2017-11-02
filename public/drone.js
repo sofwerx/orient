@@ -27,6 +27,9 @@ $(document).on('pageshow', '#drone' ,function(){
   var drones = {};
   var admins = {};
   var debounce = {};
+  var object_scores;
+  var object_found;
+  var speed;
 
   // Compatibility shim
   navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
