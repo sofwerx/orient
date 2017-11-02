@@ -154,6 +154,7 @@ $(document).on('pageshow', '#drone' ,function(){
 	        conn.send({
 	          action: "Updated",
                   timestamp: data.timestamp,
+		  resp: resp,
                   objlob: {
 	            lat: latitude,
 	            lon: longitude,
