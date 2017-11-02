@@ -12,7 +12,7 @@ var port = http_port;
 var secure = false;
 
 var options = {
-  debug: false,
+  debug: true,
   allow_discovery: true
 }
 

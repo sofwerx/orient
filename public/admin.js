@@ -52,7 +52,7 @@ $(document).on('pageshow', '#admin' ,function(){
     port: config.port,
     secure: config.secure,
     path: '/peerjs',
-    debug: 1,
+    debug: 3,
     config: config.peer
   });
 
