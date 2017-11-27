@@ -68,7 +68,9 @@ $(document).on('pageshow', '#admin' ,function(){
         $.each( drones[peer], function( index, conn) {
           data = {
             action: "Update",
-            timestamp: timestamp
+            timestamp: timestamp,
+            idclass: $( "#idclass" ).value,
+            threshhold: $( "threshhold" ).value
           }
           console.log("sending Update action to peer " + peer + " index " + index + " data: " + JSON.stringify(data));
           conn.send(data);

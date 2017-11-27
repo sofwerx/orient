@@ -136,7 +136,9 @@ $(document).on('pageshow', '#drone' ,function(){
             "fov": 120,
             "image": image,
             "peer": peer.id,
-            "timestamp": data.timestamp
+            "timestamp": data.timestamp,
+            "idclass": data.idclass,
+            "threshhold": data.threshhold
           };
 
           $.ajax({
