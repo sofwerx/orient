@@ -70,7 +70,7 @@ $(document).on('pageshow', '#admin' ,function(){
             action: "Update",
             timestamp: timestamp,
             idclass: $( "#idclass" ).value,
-            threshhold: $( "threshhold" ).value
+            threshhold: $( "#threshhold" ).value
           }
           console.log("sending Update action to peer " + peer + " index " + index + " data: " + JSON.stringify(data));
           conn.send(data);
