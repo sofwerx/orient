@@ -57,8 +57,8 @@ $(document).on('pageshow', '#admin' ,function(){
   });
 
   function triangulateNow() {
-    if(Object.keys(drones).length >= 3) {
-      console.log("sending Update action to 3 or more drones");
+//    if(Object.keys(drones).length >= 3) {
+      console.log("sending Update action to drones");
       var date = new Date();
       var timestamp = date.getTime();
       updates[timestamp] = [];
@@ -75,9 +75,9 @@ $(document).on('pageshow', '#admin' ,function(){
         });
 
       });
-    } else {
-      console.log("We only have " + Object.keys(drones).length + " drones available. Cannot triangulate. Skipping.");
-    }
+//    } else {
+//      console.log("We only have " + Object.keys(drones).length + " drones available. Cannot triangulate. Skipping.");
+//    }
   }
 
   $( "#captureButton" ).bind( "click", function(event, ui) {
