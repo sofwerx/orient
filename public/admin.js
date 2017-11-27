@@ -69,8 +69,8 @@ $(document).on('pageshow', '#admin' ,function(){
           data = {
             action: "Update",
             timestamp: timestamp,
-            idclass: $( "#idclass" ).value,
-            threshhold: $( "#threshhold" ).value
+            idclass: $( "#idclass" )[0].value,
+            threshhold: $( "#threshhold" )[0].value
           }
           console.log("sending Update action to peer " + peer + " index " + index + " data: " + JSON.stringify(data));
           conn.send(data);
