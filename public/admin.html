@@ -26,14 +26,19 @@
      <h1 id="my-header">Orient: Admin</h1>
     </div>
 
-    <p>
-    Class to ID:
-    <input style="width: 30%;" type="text" name="idclass" id="idclass" value="1" /><br />
-     <span style="text-size: 50%;">from<a href="https://github.com/tensorflow/models/blob/master/research/object_detection/data/mscoco_label_map.pbtxt"> https://github.com/tensorflow/models/blob/master/research/object_detection/data/mscoco_label_map.pbtxt</a></span>
-     <br />
-     Certainty threshhold:
-    <input style="width: 30%;" type="text" name="threshhold" id="threshhold" value="0.20" />
-    </p>
+    <div class="ui-grid-c, ui-mini">
+    <div class="ui-block-a">
+    <label for="idclass">Object class to ID:</label>
+    <input type="text" name="idclass" id="idclass" value="1" />
+    </div>
+    <div class="ui-block-b">
+    <a href="https://github.com/tensorflow/models/blob/master/research/object_detection/data/mscoco_label_map.pbtxt">Object class list</a>
+    </div>
+    <div class="ui-block-c">
+    <label for="threshhold">Certainty threshhold:</label>
+    <input type="text" name="threshhold" id="threshhold" value="0.20" />
+    </div>
+    </div>
     <button id="captureButton">Enable Triangulate</button>    
 
     <div id="main-admin" role="main" class="ui-content">
