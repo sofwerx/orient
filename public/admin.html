@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Orient</title>
   <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.2.0/dist/leaflet.css"
         integrity="sha512-M2wvCLH6DSRazYeZRIm1JnYyh22purTM+FDB5CsyxtQJYeKq83arPe5wgbNmcFXGqiSH2XR8dT/fJISVA1r/zQ=="
         crossorigin=""/>
@@ -21,24 +22,49 @@
 </head>
 
 <body>
-  <div id="admin" data-role="page">
+  <div class="container-fluid" id="admin" data-role="page">
     <div data-role="header">
      <h1 id="my-header">Orient: Admin</h1>
     </div>
 
-    <div class="ui-grid-c, ui-mini">
-    <div class="ui-block-a">
+    <div class="row">
+
+    <div class="col-sm">
     <label for="idclass">Object class to ID:</label>
     <input type="text" name="idclass" id="idclass" value="1" />
-    </div>
-    <div class="ui-block-b">
     <a href="https://github.com/tensorflow/models/blob/master/research/object_detection/data/mscoco_label_map.pbtxt">Object class list</a>
     </div>
-    <div class="ui-block-c">
+
+    <div class="col-sm">
     <label for="threshhold">Certainty threshhold:</label>
     <input type="text" name="threshhold" id="threshhold" value="0.20" />
     </div>
+
+    <div class="col-sm">
+    <label for="atak_ip">ATAK IP:</label>
+    <input type="text" name="atak_ip" id="atak_ip">
     </div>
+
+    <div class="col-sm">
+    <label for="atak_port">ATAK port:</label>
+    <input type="text" name="atak_port" id="atak_port">
+    </div>
+
+    <div class="col-sm">
+    ATAK protocol:<br />
+    <div class="form-check form-check-inline">
+      <label class="form-check-label">
+      <input class="form-check-input" type="radio" name="atak_proto" id="atak_proto_udp" value="UDP" checked>UDP
+      </label>
+    </div>
+    <div class="form-check form-check-inline">
+      <label class="form-check-label">
+      <input class="form-check-input" type="radio" name="atak_proto" id="atak_proto_tcp" value="TCP">TCP
+      </label>
+    </div>
+    </div>
+    </div>
+
     <button id="captureButton">Enable Triangulate</button>    
 
     <div id="main-admin" role="main" class="ui-content">

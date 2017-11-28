@@ -211,6 +211,9 @@ $(document).on('pageshow', '#admin' ,function(){
                 map.setView(triangulated.getLatLng(),map.getZoom());
                 atak_data["lat"] = result.targetLoc.lat
                 atak_data["lon"] = result.targetLoc.lon
+                atak_data["atak_ip"] = $( "#atak_ip" )[0].value,
+                atak_data["atak_port"] = $( "#atak_port" )[0].value,
+                atak_data["atak_proto"] = $( "#atak_proto" )[0].value,
 
                 console.log("pushcot sending atak_data: " + JSON.stringify(atak_data));
                 
