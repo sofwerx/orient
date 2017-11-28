@@ -12,4 +12,6 @@ EXPOSE 9999
 
 ADD run.sh /run.sh
 
+RUN apt-get update && apt-get install -y vim-tiny
+
 CMD /run.sh
