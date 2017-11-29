@@ -39,7 +39,11 @@ $(document).on('pageshow', '#admin' ,function(){
     }
   var fuzz = 4.0/10000.0    // amount to move each point for indoor demo
 
-  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+//  L.geoPackageTileLayer({
+//    geoPackageUrl: 'http://localhost:9999/Blue_Marble.gpkg',
+//    layer_name: 'bluemarble_tif_tiles'
+//  }).addTo(map);
+   L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
   }).addTo(map);
 
@@ -312,7 +316,13 @@ $(document).on('pageshow', '#admin' ,function(){
           if(metrics.hasOwnProperty(conn.peer) && metrics[conn.peer].hasOwnProperty("orientation")) {
             rotation = metrics[conn.peer].orientation.alpha;
           }
-          marker = L.marker([data.latitude, data.longitude],{ rotationAngle: rotation, rotationOrigin: 'bottom center' }).addTo(map);
+          marker = L.marker([data.latitude, data.longitude],{
+            rotationAngle: rotation, rotationOrigin: 'bottom center',
+            icon: L.icon({
+              iconUrl: 'https://raw.githubusercontent.com/iconic/open-iconic/master/png/camera-slr-2x.png',
+              iconSize: [16, 16]
+            })
+          }).addTo(map);
           marker.bindPopup(conn.peer);
           markers[conn.peer] = marker;
           console.log("geolocation created marker for " + conn.peer);
